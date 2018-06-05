@@ -1,7 +1,6 @@
 package com.teamtter.maven.cifriendly;
 
 import java.io.File;
-import de.pdark.decentxml.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -9,10 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -23,6 +19,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import de.pdark.decentxml.Document;
+import de.pdark.decentxml.Element;
+import de.pdark.decentxml.XMLParser;
+import de.pdark.decentxml.XMLStringSource;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;;
 
