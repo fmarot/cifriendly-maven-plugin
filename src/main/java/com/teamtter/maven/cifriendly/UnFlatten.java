@@ -45,43 +45,69 @@ public class UnFlatten extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		
+		String parentPomVersion;
 		try {
-			// read the current version in parent pom
+			parentPomVersion = readVersionInParentPom();			
+		} catch (IOException e) {
+			throw new MojoFailureException("", e);
+		}
+			
+		PathConsumer pomFileConsumer = path -> {
 			XMLParser parser = new XMLParser();
-	        String content = new String (Files.readAllBytes(Paths.get("pom.xml")), StandardCharsets.UTF_8);
-			Document doc = parser.parse (new XMLStringSource (content));
-			Element versionNode = doc.getChild("/project/version");
-			String version = versionNode.getText();
-			log.info("version used to unflatten: {}", version);
+			final String visitorContent = new String (Files.readAllBytes(path), StandardCharsets.UTF_8);
+			final Document doc = parser.parse (new XMLStringSource (visitorContent));
 			
-			// replace version with ${revision} in all pom recursively
-			PathConsumer pomFileConsumer = path -> {
-				String visitorContent = new String (Files.readAllBytes(path), StandardCharsets.UTF_8);
-				Document visitorDoc = parser.parse (new XMLStringSource (visitorContent));
-				Element visitorVersionNode = visitorDoc.getChild("/project/version");
-				if (! visitorVersionNode.getText().equals(version)) {
-					log.error("Found version {} in {} instead of ${revision}", visitorVersionNode, path);
-					throw new IOException("Unexpected version in pom " + path);
-				}
-				versionNode.setText("${revision}");
-				
-				Files.write(path, visitorDoc.toString().getBytes());
-			};
+			replaceVersionwithRevision(doc, parentPomVersion, path);
 			
-			Predicate<Path> isPomFile = path -> path.getFileName().toString().equals("pom.xml");
+			specificUpdateForRootPom(parentPomVersion, path, doc);
 			
-			ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(excludedDirs, isPomFile, pomFileConsumer);
+			Files.write(path, doc.toString().getBytes());
+		};
+		
+		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals("pom.xml");
+		ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(excludedDirs, isPomFile, pomFileConsumer);
+			
+		try {
 			Files.walkFileTree(new File(".").toPath(), pomVisitor);
 		} catch (IOException e) {
 			throw new MojoFailureException("", e);
 		}
-		
-		
-		// add (or change the value) of the properties/revision node in parent pom with value red in 1
+	}
 
-		
+	private void specificUpdateForRootPom(String parentPomVersion, Path path, final Document doc) throws IOException {
+		// add (or change the value) of the properties/revision node in parent pom with 'parentPomVersion'
+		if (Files.isSameFile(path, Paths.get("pom.xml"))) {
+			log.info("parent pom found");
+			Element revisionPropertyNode = doc.getChild("/project/properties/revision");
+			// TODO: handle the case where no revision node exist and create it
+			revisionPropertyNode.setText(parentPomVersion);
+		}
 	}
 	
+	private void replaceVersionwithRevision(Document doc, String parentPomVersion, Path path) throws IOException {
+		Element visitorVersionNode = doc.getChild("/project/version");
+		if (visitorVersionNode == null) {
+			visitorVersionNode = doc.getChild("/project/parent/version");
+		}
+		String text = visitorVersionNode.getText();
+		if (! text.equals(parentPomVersion)) {
+			log.error("Found version {} in {} instead of version {}", text, path, parentPomVersion);
+			throw new IOException("Unexpected version in pom " + path);
+		}
+		visitorVersionNode.setText("${revision}");
+		log.info("Rewriting pom {}", path);
+	}
+
+	private String readVersionInParentPom() throws IOException {
+		XMLParser parser = new XMLParser();
+		final String content = new String (Files.readAllBytes(Paths.get("pom.xml")), StandardCharsets.UTF_8);
+        final Document doc = parser.parse (new XMLStringSource (content));
+		final Element versionNode = doc.getChild("/project/version");
+		final String version = versionNode.getText();
+		log.info("version used to unflatten: {}", version);
+		return version;
+	}
+
 	public static void main(String[] args) throws IOException {
         XMLParser parser = new XMLParser();
         String content = new String (Files.readAllBytes(Paths.get("../test-fake-module/pom.xml")), StandardCharsets.UTF_8);

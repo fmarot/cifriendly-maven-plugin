@@ -14,3 +14,8 @@ https://github.com/mojohaus/flatten-maven-plugin/issues/51
 http://blog.soebes.de/blog/2017/04/02/maven-pom-files-without-a-version-in-it/
 
 = Usage
+
+
+= Technical details
+
+the library "decentxml" is used to keep pom formatting 
