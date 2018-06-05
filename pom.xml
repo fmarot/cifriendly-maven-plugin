@@ -3,6 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>com.oleamedical.oleasphere</groupId>
+		<artifactId>oleasphere-company-pom</artifactId>
+		<version>0.0.21</version>
+	</parent>
+	
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
@@ -43,21 +49,6 @@
 	<!-- <distributionManagement> <snapshotRepository> <id>ossrh</id> <url>https://oss.sonatype.org/content/repositories/snapshots</url> 
 		</snapshotRepository> <repository> <id>ossrh</id> <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> 
 		</repository> </distributionManagement> -->
-
-	<distributionManagement>
-		<!-- This part is used for uploading artifact we create (with mvn deploy) 
-			see https://maven.apache.org/pom.html#Repository and http://archiva.apache.org/docs/2.1.1/userguide/deploy.html -->
-		<repository>
-			<id>archiva.internal</id>
-			<name>Internal Release Repository</name>
-			<url>http://centos-dev:8090/repository/internal/</url>
-		</repository>
-		<snapshotRepository>
-			<id>archiva.snapshots</id>
-			<name>Internal Snapshot Repository</name>
-			<url>http://centos-dev:8090/repository/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<!-- Info: you can have details about this plugin by running "mvn help:describe 
 		-DartifactId=scm-graph-maven-plugin -DgroupId=com.teamtter.maven -Ddetail" -->
