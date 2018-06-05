@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;;
 		defaultPhase = LifecyclePhase.NONE,	//
 		requiresProject = true,				//
 		threadSafe = false,					//
+		aggregator = true,
 		requiresDependencyCollection = ResolutionScope.NONE,	//
 		requiresDependencyResolution = ResolutionScope.NONE)
 @Slf4j
