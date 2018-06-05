@@ -16,9 +16,9 @@ class ChangePomFileVisitor extends SimpleFileVisitor<Path> {
 
 	private List<String>	excludedDirs;
 	private Predicate<Path>	fileMatchesPredicate;
-	private Consumer<Path>	matchingFilesConsumer;
+	private PathConsumer	matchingFilesConsumer;
 
-	public ChangePomFileVisitor(List<String> excludedDirs, Predicate<Path> fileMatchesPredicate, Consumer<Path> matchingFilesConsumer) {
+	public ChangePomFileVisitor(List<String> excludedDirs, Predicate<Path> fileMatchesPredicate, PathConsumer matchingFilesConsumer) {
 		this.excludedDirs = excludedDirs;
 		this.fileMatchesPredicate = fileMatchesPredicate;
 		this.matchingFilesConsumer = matchingFilesConsumer;

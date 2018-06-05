@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;;
 		requiresDependencyCollection = ResolutionScope.NONE,	//
 		requiresDependencyResolution = ResolutionScope.NONE)
 @Slf4j
-public class CIFriendlyMojo extends AbstractMojo {
+public class FlattenMojo extends AbstractMojo {
 
 	private List<String>	excludedDirs	= Arrays.asList(".git", "target", "src", ".idea", ".settings");
 
@@ -48,7 +48,7 @@ public class CIFriendlyMojo extends AbstractMojo {
 		String pattern = "<version>${revision}</version>";
 		String replacement = "<version>" + version + "</version>";
 		
-		Consumer<Path> pomFileConsumer = path -> {
+		PathConsumer pomFileConsumer = path -> {
 			try (Stream<String> lines = Files.lines(path)) {
 				List<String> replaced = lines
 						.peek(line -> {

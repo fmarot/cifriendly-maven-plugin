@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -6,7 +8,7 @@
 		<artifactId>oleasphere-company-pom</artifactId>
 		<version>0.0.21</version>
 	</parent>
-	
+
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
 	<version>1.0.3-SNAPSHOT</version>
@@ -168,6 +170,14 @@
 			<artifactId>maven-plugin-annotations</artifactId>
 			<version>3.5</version>
 			<scope>provided</scope> <!-- It comes from maven itself -->
+		</dependency>
+
+		<!-- XML -->
+
+		<dependency>
+			<groupId>de.pdark</groupId>
+			<artifactId>decentxml</artifactId>
+			<version>1.4</version>
 		</dependency>
 
 		<!-- Misc -->
