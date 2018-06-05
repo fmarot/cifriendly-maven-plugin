@@ -46,16 +46,17 @@ public class CIFriendlyMojo extends AbstractMojo {
 		log.info("Maven project version read: {}", version);
 		
 		String pattern = "<version>${revision}</version>";
+		String replacement = "<version>" + version + "</version>";
 		
 		Consumer<Path> pomFileConsumer = path -> {
 			try (Stream<String> lines = Files.lines(path)) {
 				List<String> replaced = lines
 						.peek(line -> {
 							if (line.contains(pattern)) {
-								log.info("Will replace pattern {} in {}", pattern, path);
+								log.info("Will replace pattern {} with {} in {}", pattern, replacement, path);
 							}	
 						})
-						.map(line -> line.replace(pattern, "<version>" + version + "</version>"))
+						.map(line -> line.replace(pattern, replacement))
 						.collect(Collectors.toList());
 				Files.write(path, replaced);
 			} catch (IOException e) {
