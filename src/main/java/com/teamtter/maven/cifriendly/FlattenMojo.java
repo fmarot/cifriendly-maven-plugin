@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,28 +31,26 @@ import lombok.extern.slf4j.Slf4j;;
 @Slf4j
 public class FlattenMojo extends AbstractMojo {
 
-	private List<String>	excludedDirs	= Arrays.asList(".git", "target", "src", ".idea", ".settings");
-
 	@Parameter(defaultValue = "${project}", readonly = true)
 	@Setter
-	private MavenProject	mavenProject;
+	private MavenProject mavenProject;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
 		final String version = mavenProject.getVersion();
 		log.info("Maven project version read: {}", version);
-		
-		String pattern = "<version>${revision}</version>";
+
+		String pattern = "<version>" + CIFriendlyUtils.REVISION + "</version>";
 		String replacement = "<version>" + version + "</version>";
-		
+
 		PathConsumer pomFileConsumer = path -> {
 			try (Stream<String> lines = Files.lines(path)) {
 				List<String> replaced = lines
 						.peek(line -> {
 							if (line.contains(pattern)) {
 								log.info("Will replace pattern {} with {} in {}", pattern, replacement, path);
-							}	
+							}
 						})
 						.map(line -> line.replace(pattern, replacement))
 						.collect(Collectors.toList());
@@ -64,9 +60,9 @@ public class FlattenMojo extends AbstractMojo {
 			}
 		};
 
-		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals("pom.xml");
+		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals(CIFriendlyUtils.POM_XML);
 
-		ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(excludedDirs, isPomFile, pomFileConsumer);
+		ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileConsumer);
 		try {
 			Files.walkFileTree(new File(".").toPath(), pomVisitor);
 		} catch (IOException e) {

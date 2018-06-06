@@ -12,7 +12,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UnFlattenTest {
+public class UnFlattenMojoTest {
 	
 	Path resources = Paths.get("target/test-classes/unflatten");
 	
@@ -22,10 +22,10 @@ public class UnFlattenTest {
 		Path relativeReferenceTestPath = Paths.get("singlePom-reference");
 		Path testPath  = resources.resolve(relativeTestPath);
 		Path referenceTestPath  = resources.resolve(relativeReferenceTestPath);
-		UnFlatten.unflatten(testPath);
+		UnFlattenMojo.unflatten(testPath);
 		assertDirectoriesAreEquals(testPath, referenceTestPath);
 		// execute it a second time to make sure the results are always the same (the second time /properties/revision/X.Y.Z-SNAPSHOT must not be replaced by ${revision} !)
-		UnFlatten.unflatten(testPath);
+		UnFlattenMojo.unflatten(testPath);
 		assertDirectoriesAreEquals(testPath, referenceTestPath);		
 	}
 	
