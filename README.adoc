@@ -42,8 +42,12 @@ using CI friendly Maven forces the local dev to always execute from the upper po
 
 So we have to use the --projects feature of Maven from the root if we want to build only a specific child. We can not build directly from its sub-directory.
 
-= Usage
+= TODO
 
+* for flatten Mojo, use the same principle as for the unflatten Mojo so that we can have better logs (no saying "Rewriting pom" when in fact the pom is already flattened)
+
+
+= Usage
 
 
 [subs="attributes"]
