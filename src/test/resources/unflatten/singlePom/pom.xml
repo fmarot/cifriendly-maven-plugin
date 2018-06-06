@@ -11,13 +11,14 @@
 
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
-	<version>${revision}</version>
+	<version>1.0.3-SNAPSHOT</version>
 
 	<packaging>maven-plugin</packaging>
 	<name>cifriendly-maven-plugin Maven Mojo</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
+		<revision>1.0.2-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.version>3.5.0</maven.version>
@@ -188,7 +189,12 @@
 			<version>1.7.5</version>
 			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.5</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
