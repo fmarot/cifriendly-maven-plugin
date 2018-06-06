@@ -14,13 +14,35 @@ https://github.com/mojohaus/flatten-maven-plugin/issues/51
 
 http://blog.soebes.de/blog/2017/04/02/maven-pom-files-without-a-version-in-it/
 
+== flatten
+
+Replace the '${revision}' variables in all pom.xml of the MultiModule Maven Project with the real hardcoded version found in the upper pom's properties/revision node.
+
+For example all child pom's "${revision}" version in their <parent> declaration will be replaced with the hardcoded "1.2.3-SNAPSHOT" if the upper pom contains: 
+
+[source,xml]
+----
+<properties>
+	<revision>1.2.3-SNAPSHOT</revision>
+	...
+</properties>
+----
+ 
+
+== unflatten
+
+First, in the upper pom, the hardcoded version is transfered into the properties/revision node, overwriting any previous value.
+So after a Maven release, the properties/revision node will see the correct version again.
+
+Then it replaces the hardcoded version in all the poms (including the upper one) with a "${revision}" variable. In the upper pom.
+
 = Usage
 
-com.teamtter.maven:cifriendly-maven-plugin:{var_version}:unflatten
+
 
 [subs="attributes"]
 ----
-this is a version test: {var_version}
+mvn com.teamtter.maven:cifriendly-maven-plugin:{var_version}:unflatten
 ----
 
 = Technical details
