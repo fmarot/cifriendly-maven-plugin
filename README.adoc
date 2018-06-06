@@ -36,6 +36,12 @@ So after a Maven release, the properties/revision node will see the correct vers
 
 Then it replaces the hardcoded version in all the poms (including the upper one) with a "${revision}" variable. In the upper pom.
 
+= Warning: caveats of CI friendly
+
+using CI friendly Maven forces the local dev to always execute from the upper pomso that ${revision} is defined. Otherwise child pom will not know their parent.
+
+So we have to use the --projects feature of Maven from the root if we want to build only a specific child. We can not build directly from its sub-directory.
+
 = Usage
 
 
