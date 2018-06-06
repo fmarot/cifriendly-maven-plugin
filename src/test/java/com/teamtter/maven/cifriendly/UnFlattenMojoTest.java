@@ -13,22 +13,23 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class UnFlattenMojoTest {
-	
+
 	Path resources = Paths.get("target/test-classes/unflatten");
-	
+
 	@Test
 	public void testSinglePom() throws MojoFailureException, IOException {
 		Path relativeTestPath = Paths.get("singlePom");
 		Path relativeReferenceTestPath = Paths.get("singlePom-reference");
-		Path testPath  = resources.resolve(relativeTestPath);
-		Path referenceTestPath  = resources.resolve(relativeReferenceTestPath);
-		UnFlattenMojo.unflatten(testPath);
+		Path testPath = resources.resolve(relativeTestPath);
+		Path referenceTestPath = resources.resolve(relativeReferenceTestPath);
+		boolean ignoreErrors = false;
+		UnFlattenMojo.unflatten(testPath, ignoreErrors);
 		assertDirectoriesAreEquals(testPath, referenceTestPath);
 		// execute it a second time to make sure the results are always the same (the second time /properties/revision/X.Y.Z-SNAPSHOT must not be replaced by ${revision} !)
-		UnFlattenMojo.unflatten(testPath);
-		assertDirectoriesAreEquals(testPath, referenceTestPath);		
+		UnFlattenMojo.unflatten(testPath, ignoreErrors);
+		assertDirectoriesAreEquals(testPath, referenceTestPath);
 	}
-	
+
 	private void assertDirectoriesAreEquals(Path testPath, Path referenceTestPath) throws IOException {
 		assertTrue("The files differ!", FileUtils.contentEquals(
 				testPath.resolve("pom.xml").toFile(),
@@ -37,6 +38,6 @@ public class UnFlattenMojoTest {
 
 	@Test
 	public void testMultiModuleMavenProject() {
-		
+
 	}
 }

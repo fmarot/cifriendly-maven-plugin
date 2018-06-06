@@ -20,6 +20,7 @@ import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
 import de.pdark.decentxml.XMLParser;
 import de.pdark.decentxml.XMLStringSource;
+import io.fabric8.updatebot.support.DecentXmlHelper;
 import lombok.extern.slf4j.Slf4j;;
 
 @Mojo(name = "unflatten",					// the goal
@@ -33,15 +34,18 @@ import lombok.extern.slf4j.Slf4j;;
 public class UnFlattenMojo extends AbstractMojo {
 
 	@Parameter(property = "rootDir", defaultValue = "${session.executionRootDirectory}")
-	private File rootDir;
+	private File	rootDir;
+
+	@Parameter(property = "ignoreErrors", defaultValue = "false")
+	private boolean	ignoreErrors;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		Path rootPath = rootDir.toPath();
-		unflatten(rootPath);
+		unflatten(rootPath, ignoreErrors);
 	}
 
-	protected static void unflatten(Path rootPath) throws MojoFailureException {
+	protected static void unflatten(Path rootPath, boolean ignoreErrors) throws MojoFailureException {
 		Path rootPom = Paths.get(rootPath.toString(), CIFriendlyUtils.POM_XML);
 
 		String parentPomVersion;
@@ -52,7 +56,7 @@ public class UnFlattenMojo extends AbstractMojo {
 		}
 
 		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals(CIFriendlyUtils.POM_XML);
-		PathConsumer pomFileUpdater = buildPomFileUpdater(rootPom, parentPomVersion);
+		PathConsumer pomFileUpdater = buildPomFileUpdater(rootPom, parentPomVersion, ignoreErrors);
 		ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileUpdater);
 
 		try {
@@ -63,7 +67,7 @@ public class UnFlattenMojo extends AbstractMojo {
 	}
 
 	/** build the consumer that will receive pom files to update them */
-	private static PathConsumer buildPomFileUpdater(Path rootPom, String parentPomVersion) {
+	private static PathConsumer buildPomFileUpdater(Path rootPom, String parentPomVersion, boolean ignoreErrors) {
 		return path -> {
 			// Prepare XML parser & model
 			XMLParser parser = new XMLParser();
@@ -71,7 +75,7 @@ public class UnFlattenMojo extends AbstractMojo {
 			final Document doc = parser.parse(new XMLStringSource(visitorContent));
 
 			// update the DOM
-			replaceVersionwithRevision(doc, parentPomVersion, path);
+			replaceVersionwithRevision(doc, parentPomVersion, path, ignoreErrors);
 			specificUpdateForRootPom(doc, parentPomVersion, path, rootPom);
 
 			// write back the result
@@ -88,20 +92,28 @@ public class UnFlattenMojo extends AbstractMojo {
 			} else {
 				Element revisionPropertyNode = doc.getChild("/project/properties/revision");
 				if (revisionPropertyNode == null) {
-					throw new IOException("this pom has no properties/revision section so it was never CI friendly => can not unflatten...");
+
+					Element propertiesNode = doc.getChild("/project/properties/");
+					if (propertiesNode == null) {
+						DecentXmlHelper.addChildElement(doc.getChild("/project"), "properties");
+						propertiesNode = doc.getChild("/project/properties/");
+					}
+
+					DecentXmlHelper.addChildElement(propertiesNode, "revision", parentPomVersion);
+					revisionPropertyNode = doc.getChild("/project/properties/revision");
 				}
 				revisionPropertyNode.setText(parentPomVersion);
 			}
 		}
 	}
 
-	private static void replaceVersionwithRevision(Document doc, String parentPomVersion, Path path) throws IOException {
+	private static void replaceVersionwithRevision(Document doc, String parentPomVersion, Path path, boolean ignoreErrors) throws IOException {
 		Element visitorVersionNode = doc.getChild("/project/version");
 		if (visitorVersionNode == null) {
 			visitorVersionNode = doc.getChild("/project/parent/version");
 		}
 		String text = visitorVersionNode.getText();
-		if (!text.equals(parentPomVersion)) {
+		if ((!text.equals(parentPomVersion)) && (ignoreErrors == false)) {
 			log.error("Found version {} in {} instead of version {}", text, path, parentPomVersion);
 			throw new IOException("Unexpected version in pom " + path);
 		}
