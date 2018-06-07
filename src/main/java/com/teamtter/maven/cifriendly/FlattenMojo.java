@@ -62,7 +62,7 @@ public class FlattenMojo extends AbstractMojo {
 
 		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals(CIFriendlyUtils.POM_XML);
 
-		ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileConsumer);
+		DirectoryVisitor pomVisitor = new DirectoryVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileConsumer);
 		try {
 			Files.walkFileTree(new File(".").toPath(), pomVisitor);
 		} catch (IOException e) {

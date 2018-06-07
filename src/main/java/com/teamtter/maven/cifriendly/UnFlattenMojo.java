@@ -56,7 +56,7 @@ public class UnFlattenMojo extends AbstractMojo {
 
 		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals(CIFriendlyUtils.POM_XML);
 		PathConsumer pomFileUpdater = buildPomFileUpdater(rootPom, parentPomVersion, ignoreErrors);
-		ChangePomFileVisitor pomVisitor = new ChangePomFileVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileUpdater);
+		DirectoryVisitor pomVisitor = new DirectoryVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileUpdater);
 
 		try {
 			Files.walkFileTree(rootPath, pomVisitor);

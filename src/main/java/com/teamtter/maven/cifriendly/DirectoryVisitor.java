@@ -12,13 +12,13 @@ import java.util.function.Predicate;
 import lombok.extern.slf4j.Slf4j;;
 
 @Slf4j
-class ChangePomFileVisitor extends SimpleFileVisitor<Path> {
+class DirectoryVisitor extends SimpleFileVisitor<Path> {
 
 	private List<String>	excludedDirs;
 	private Predicate<Path>	fileMatchesPredicate;
 	private PathConsumer	matchingFilesConsumer;
 
-	public ChangePomFileVisitor(List<String> excludedDirs, Predicate<Path> fileMatchesPredicate, PathConsumer matchingFilesConsumer) {
+	public DirectoryVisitor(List<String> excludedDirs, Predicate<Path> fileMatchesPredicate, PathConsumer matchingFilesConsumer) {
 		this.excludedDirs = excludedDirs;
 		this.fileMatchesPredicate = fileMatchesPredicate;
 		this.matchingFilesConsumer = matchingFilesConsumer;
