@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
+import de.pdark.decentxml.Text;
 import io.fabric8.updatebot.support.DecentXmlHelper;
 
 public class CIFriendlyUtils {
@@ -24,7 +25,9 @@ public class CIFriendlyUtils {
 				propertiesNode = doc.getChild("/project/properties/");
 			}
 
+			propertiesNode.addNode(new Text("\t"));
 			DecentXmlHelper.addChildElement(propertiesNode, "revision", version);
+			propertiesNode.addNode(new Text("\n\t"));
 			revisionPropertyNode = doc.getChild("/project/properties/revision");
 		}
 		revisionPropertyNode.setText(version);

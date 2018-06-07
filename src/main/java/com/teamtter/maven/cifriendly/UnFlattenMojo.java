@@ -20,7 +20,6 @@ import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
 import de.pdark.decentxml.XMLParser;
 import de.pdark.decentxml.XMLStringSource;
-import io.fabric8.updatebot.support.DecentXmlHelper;
 import lombok.extern.slf4j.Slf4j;;
 
 @Mojo(name = "unflatten",					// the goal
