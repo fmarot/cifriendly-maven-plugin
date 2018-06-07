@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.oleamedical.oleasphere</groupId>
+		<artifactId>oleasphere-company-pom</artifactId>
+		<version>0.0.21</version>
+	</parent>
+
+	<groupId>com.teamtter.maven</groupId>
+	<artifactId>cifriendly-maven-plugin</artifactId>
+	<version>${revision}</version>
+
+	<packaging>maven-plugin</packaging>
+	<name>cifriendly-maven-plugin Maven Mojo</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<revision>1.0.2-SNAPSHOT</revision>
+	</properties>
+
+	<build>
+
+		<plugins>
+
+			<plugin>
+				<!-- required to inject custom components into Mojo through @Component 
+					annotation -->
+				<groupId>org.codehaus.plexus</groupId>
+				<artifactId>plexus-component-metadata</artifactId>
+				<version>1.7.1</version>
+				<executions>
+					<execution>
+						<id>process-classes</id>
+						<goals>
+							<goal>generate-metadata</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>process-test-classes</id>
+						<goals>
+							<goal>generate-test-metadata</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
+
+	<dependencies>
+
+		<!-- Test libs -->
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>

@@ -1,12 +1,13 @@
 package com.teamtter.maven.cifriendly;
 
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -47,21 +48,52 @@ public class UpdatePropertiesVersionWithBranchMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		Path rootPath = rootDir.toPath();
-
-		XMLParser parser = new XMLParser();
-		Path rootPomPath = new File(rootDir, "pom.xml").toPath();
-		final String visitorContent = new String(Files.readAllBytes(rootPomPath), StandardCharsets.UTF_8);
-		final Document doc = parser.parse(new XMLStringSource(visitorContent));
-		Element revisionPropertyNode = doc.getChild("/project/properties/revision");
-		if (revisionPropertyNode == null) {
-			log.warn("No properties/revision node in {}", rootPomPath);
-			outputResult(WAS_NOT_UPDATED);
+		try {
+			updatePropertiesVersionWithBranch(rootPath, branch);
+		} catch (IOException e) {
+			throw new MojoExecutionException("pdatePropertiesVersionWithBranch failed", e);
 		}
 	}
 
-	private void outputResult(String updatedOrNot) throws IOException {
+	protected void updatePropertiesVersionWithBranch(Path rootPath, String newBranch) throws IOException {
+		XMLParser parser = new XMLParser();
+		Path rootPomPath = rootPath.resolve("pom.xml");
+		final String visitorContent = new String(Files.readAllBytes(rootPomPath), StandardCharsets.UTF_8);
+		final Document doc = parser.parse(new XMLStringSource(visitorContent));
+
+		checkPreconditions(doc);
+
+		Element revisionPropertyNode = doc.getChild("/project/properties/revision");
+		if (revisionPropertyNode == null) {
+			log.warn("No properties/revision node in {}", rootPomPath);
+			outputResult(WAS_NOT_UPDATED, rootPath);
+		} else {
+			String currentVersion = revisionPropertyNode.getText();
+			String newVersion = VersionComputer.computeNewVersion(currentVersion, newBranch);
+			if (currentVersion.equals(newVersion)) {
+				log.info("current version {} is already correct in {} => pom not updated", rootPomPath);
+				outputResult(WAS_NOT_UPDATED, rootPath);
+			} else {
+				CIFriendlyUtils.setPropertiesRevisionText(doc, newVersion);
+				Files.write(rootPomPath, doc.toString().getBytes());
+				outputResult(WAS_UPDATED, rootPath);
+			}
+		}
+	}
+
+	/** the version of the pom MUST be ${revision} */
+	private void checkPreconditions(Document doc) throws IOException {
+		Element versionNode = doc.getChild("/project/version");
+		if (!versionNode.getText().equals(CIFriendlyUtils.REVISION)) {
+			throw new IOException("The root pom must contain a version with value " + CIFriendlyUtils.REVISION);
+		}
+	}
+
+	private void outputResult(String updatedOrNot, Path rootPath) throws IOException {
 		if (outputResultInFile) {
-			Files.write(rootDir.toPath().resolve("updatePropertiesVersionWithBranch"), updatedOrNot.getBytes(), OpenOption.);
+			Files.write(rootPath.resolve("updatePropertiesVersionWithBranch"), updatedOrNot.getBytes(), TRUNCATE_EXISTING, CREATE_NEW);
+		} else {
+			log.debug("Not writing result {} to file due to outputResultInFile={}", updatedOrNot, outputResultInFile);
 		}
 	}
 }

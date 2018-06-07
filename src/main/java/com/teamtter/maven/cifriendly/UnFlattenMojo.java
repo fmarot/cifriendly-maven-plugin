@@ -90,19 +90,7 @@ public class UnFlattenMojo extends AbstractMojo {
 			if (parentPomVersion.equals(CIFriendlyUtils.REVISION)) {
 				log.info("Parent pom already unflattened => will not update it's node /project/properties/revision");
 			} else {
-				Element revisionPropertyNode = doc.getChild("/project/properties/revision");
-				if (revisionPropertyNode == null) {
-
-					Element propertiesNode = doc.getChild("/project/properties/");
-					if (propertiesNode == null) {
-						DecentXmlHelper.addChildElement(doc.getChild("/project"), "properties");
-						propertiesNode = doc.getChild("/project/properties/");
-					}
-
-					DecentXmlHelper.addChildElement(propertiesNode, "revision", parentPomVersion);
-					revisionPropertyNode = doc.getChild("/project/properties/revision");
-				}
-				revisionPropertyNode.setText(parentPomVersion);
+				CIFriendlyUtils.setPropertiesRevisionText(doc, parentPomVersion);
 			}
 		}
 	}
