@@ -1,7 +1,7 @@
 :toc: macro
 
 image:https://travis-ci.org/fmarot/cifriendly-maven-plugin.svg?branch=master["Build Status", link="https://travis-ci.org/fmarot/cifriendly-maven-plugin"]
-image:https://img.shields.io/maven-central/v/com.teamtter.maven/cifriendly-maven-plugin.svg["Latest Maven Central deployment", link="http://search.maven.org/#search%7Cga%7C1%7Ccom.teamtter.maven"]
+image:https://img.shields.io/maven-central/v/com.teamtter.maven/cifriendly-maven-plugin.svg["Latest Maven Central deployment", link="http://search.maven.org/#search%7Cga%7C1%7Ccom.teamtter"]
 
 :var_version: 1.0.3-SNAPSHOT
 
