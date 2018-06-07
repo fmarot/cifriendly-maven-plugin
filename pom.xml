@@ -166,20 +166,6 @@
 	</profiles>
 
 	<dependencies>
-
-		<!-- <dependency> force a recent version to prevent "Execution default-descriptor 
-			of goal org.apache.maven.plugins:maven-plugin-plugin:3.2:descriptor failed: 
-			8704" Caused by: java.lang.ArrayIndexOutOfBoundsException: 8704 <artifactId>asm-commons</artifactId> 
-			<groupId>org.ow2.asm</groupId> <version>6.0</version> </dependency> -->
-
-		<!-- Maven plugin specific -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.oleamedical.iai</groupId> -->
-<!-- 			<artifactId>iai-sdk-natives-win</artifactId> -->
-<!-- 			<version>2.0.0-perm_constraints_natives-SNAPSHOT</version> -->
-<!-- 			<classifier>natives-win</classifier> -->
-<!-- 			<type>zip</type> -->
-<!-- 		</dependency> -->
 		
 		<dependency>
 			<groupId>org.apache.maven</groupId>

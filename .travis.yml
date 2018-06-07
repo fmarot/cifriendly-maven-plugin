@@ -8,4 +8,4 @@ cache:
 before_install:
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
-script: mvn clean deploy -f ./cifriendly-maven-plugin/pom.xml --settings .travis/settings.xml -DskipTests=true -Pgpgsign -B -U
+script: mvn clean deploy -f pom.xml --settings .travis/settings.xml -DskipTests=true -Pgpgsign -B -U
