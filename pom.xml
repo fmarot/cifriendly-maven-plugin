@@ -14,6 +14,10 @@
 	<packaging>maven-plugin</packaging>
 	<name>cifriendly-maven-plugin Maven Mojo</name>
 	<url>http://maven.apache.org</url>
+	<description>
+	This plugin helps with configuring Maven projects (especially multi-modules) for them
+	to be Continuous Integration friendly.
+	</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -44,6 +48,7 @@
 	<scm>
 		<connection>scm:git:git@github.com:fmarot/cifriendly-maven-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:fmarot/cifriendly-maven-plugin.git</developerConnection>
+		<url>https://github.com/fmarot/cifriendly-maven-plugin</url>
 		<tag>HEAD</tag>
 	</scm>
 
