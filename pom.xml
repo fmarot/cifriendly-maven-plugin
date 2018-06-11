@@ -1,11 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-<!-- 	<parent> -->
-<!-- 		<groupId>com.oleamedical.oleasphere</groupId> -->
-<!-- 		<artifactId>oleasphere-company-pom</artifactId> -->
-<!-- 		<version>0.0.21</version> -->
-<!-- 	</parent> -->
+	<parent>
+		<groupId>com.oleamedical.oleasphere</groupId>
+		<artifactId>oleasphere-company-pom</artifactId>
+		<version>0.0.21</version>
+	</parent>
 
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
@@ -44,7 +46,7 @@
 			<organizationUrl>http://github.com/fmarot</organizationUrl>
 		</developer>
 	</developers>
-		
+
 	<scm>
 		<connection>scm:git:git@github.com:fmarot/cifriendly-maven-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:fmarot/cifriendly-maven-plugin.git</developerConnection>
@@ -55,16 +57,9 @@
 
 	<!-- To deploy to Maven Central, if you are using the Maven deploy plugin, 
 		which is the default behavior, we need this "distributionManagement" section. -->
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
+	<!-- <distributionManagement> <snapshotRepository> <id>ossrh</id> <url>https://oss.sonatype.org/content/repositories/snapshots</url> 
+		</snapshotRepository> <repository> <id>ossrh</id> <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> 
+		</repository> </distributionManagement> -->
 
 	<!-- Info: you can have details about this plugin by running "mvn help:describe 
 		-DartifactId=scm-graph-maven-plugin -DgroupId=com.teamtter.maven -Ddetail" -->
@@ -147,31 +142,14 @@
 		<!-- To deploy on central just run "mvn clean deploy -P gpgsign" -->
 		<!-- Then go to https://oss.sonatype.org/#stagingRepositories and select 
 			"close" then "release" -->
-		<profile>
-			<id>gpgsign</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.1</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+		<!-- <profile> <id>gpgsign</id> <build> <plugins> <plugin> <groupId>org.apache.maven.plugins</groupId> 
+			<artifactId>maven-gpg-plugin</artifactId> <version>1.1</version> <executions> 
+			<execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> <goal>sign</goal> 
+			</goals> </execution> </executions> </plugin> </plugins> </build> </profile> -->
 	</profiles>
 
 	<dependencies>
-		
+
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
@@ -218,7 +196,7 @@
 			<version>${slf4j.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
