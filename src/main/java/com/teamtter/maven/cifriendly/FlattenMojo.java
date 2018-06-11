@@ -34,13 +34,20 @@ public class FlattenMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${project}", readonly = true)
 	@Setter
 	private MavenProject mavenProject;
+	
+	@Parameter(property = "rootDir", defaultValue = "${session.executionRootDirectory}")
+	private File	rootDir;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
-
+		Path rootPath = rootDir.toPath();
 		final String version = mavenProject.getVersion();
 		log.info("Maven project version read: {}", version);
 
+		flatten(rootPath, version);
+	}
+
+	protected void flatten(Path rootPath, String version) throws MojoFailureException {
 		String pattern = "<version>" + CIFriendlyUtils.REVISION + "</version>";
 		String replacement = "<version>" + version + "</version>";
 
@@ -64,7 +71,7 @@ public class FlattenMojo extends AbstractMojo {
 
 		DirectoryVisitor pomVisitor = new DirectoryVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileConsumer);
 		try {
-			Files.walkFileTree(new File(".").toPath(), pomVisitor);
+			Files.walkFileTree(rootPath, pomVisitor);
 		} catch (IOException e) {
 			throw new MojoFailureException("", e);
 		}
