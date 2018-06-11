@@ -70,8 +70,8 @@ public class UnFlattenMojo extends AbstractMojo {
 		return path -> {
 			// Prepare XML parser & model
 			XMLParser parser = new XMLParser();
-			final String visitorContent = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-			final Document doc = parser.parse(new XMLStringSource(visitorContent));
+			final String pomContent = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+			final Document doc = parser.parse(new XMLStringSource(pomContent));
 
 			// update the DOM
 			replaceVersionwithRevision(doc, parentPomVersion, path, ignoreErrors);
@@ -95,16 +95,16 @@ public class UnFlattenMojo extends AbstractMojo {
 	}
 
 	private static void replaceVersionwithRevision(Document doc, String parentPomVersion, Path path, boolean ignoreErrors) throws IOException {
-		Element visitorVersionNode = doc.getChild("/project/version");
-		if (visitorVersionNode == null) {
-			visitorVersionNode = doc.getChild("/project/parent/version");
+		Element pomVersionNode = doc.getChild("/project/version");
+		if (pomVersionNode == null) {
+			pomVersionNode = doc.getChild("/project/parent/version");
 		}
-		String text = visitorVersionNode.getText();
+		String text = pomVersionNode.getText();
 		if ((!text.equals(parentPomVersion)) && (ignoreErrors == false)) {
 			log.error("Found version {} in {} instead of version {}", text, path, parentPomVersion);
 			throw new IOException("Unexpected version in pom " + path);
 		}
-		visitorVersionNode.setText(CIFriendlyUtils.REVISION);
+		pomVersionNode.setText(CIFriendlyUtils.REVISION);
 		log.info("Rewriting pom {}", path);
 	}
 
