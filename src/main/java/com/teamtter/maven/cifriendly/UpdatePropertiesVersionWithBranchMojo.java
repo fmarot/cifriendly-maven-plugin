@@ -91,9 +91,14 @@ public class UpdatePropertiesVersionWithBranchMojo extends AbstractMojo {
 
 	private void outputResult(String updatedOrNot, Path rootPath) throws IOException {
 		if (outputResultInFile) {
-			Files.write(rootPath.resolve("updatePropertiesVersionWithBranch"), updatedOrNot.getBytes(), TRUNCATE_EXISTING, CREATE_NEW);
+			Path targetDir = rootPath.resolve("target/");
+			Files.createDirectories(targetDir);
+			Path resultFile = targetDir.resolve("updatePropertiesVersionWithBranch.log");
+			log.debug("Will write result {} into {}", updatedOrNot, resultFile.toFile());
+			Files.write(resultFile, updatedOrNot.getBytes(), TRUNCATE_EXISTING, CREATE_NEW);
 		} else {
 			log.debug("Not writing result {} to file due to outputResultInFile={}", updatedOrNot, outputResultInFile);
 		}
 	}
+
 }
