@@ -76,5 +76,45 @@ public class FlattenMojo extends AbstractMojo {
 			throw new MojoFailureException("", e);
 		}
 	}
+	
+	/*
+	try {
+		XMLParser parser = new XMLParser();
+		String pomContent;
+		Path pomPath = rootPath.resolve("pom.xml");
+		pomContent = new String(Files.readAllBytes(pomPath), StandardCharsets.UTF_8);
+		final Document doc = parser.parse(new XMLStringSource(pomContent));
+
+		Element pomVersionNode = doc.getChild("/project/version");
+		if (pomVersionNode == null) {
+			pomVersionNode = doc.getChild("/project/parent/version");
+		}
+		String pomVersion = pomVersionNode.getText();
+		
+		Element pomRevisionNode = doc.getChild("/project/properties/revision");
+		if (pomRevisionNode == null) {
+			throw new MojoFailureException("no revision property in "+ pomPath +" => unable to flatten");
+		}
+		
+		String revisionVersion = pomRevisionNode.getText(); 
+		
+
+		PathConsumer pomFileConsumer = path -> {
+			XMLParser visitorParser = new XMLParser();
+			String visitorPomContent;
+			Path visitorPomPath = rootPath.resolve("pom.xml");
+			
+			TODO BLABLABLA
+		};
+
+		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals(CIFriendlyUtils.POM_XML);
+
+		DirectoryVisitor pomVisitor = new DirectoryVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileConsumer);
+
+		Files.walkFileTree(rootPath, pomVisitor);
+	} catch (IOException e) {
+		throw new MojoFailureException("", e);
+	}
+	 */
 
 }
