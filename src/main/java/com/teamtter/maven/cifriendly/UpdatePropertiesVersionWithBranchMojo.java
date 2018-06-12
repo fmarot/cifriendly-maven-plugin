@@ -75,7 +75,9 @@ public class UpdatePropertiesVersionWithBranchMojo extends AbstractMojo {
 				outputResult(WAS_NOT_UPDATED, rootPath);
 			} else {
 				CIFriendlyUtils.setPropertiesRevisionText(doc, newVersion);
-				Files.write(rootPomPath, doc.toString().getBytes());
+				String rootPomContent = doc.toString();
+				Files.write(rootPomPath, rootPomContent.getBytes());
+				log.debug("New pom is: \n {}", rootPomContent);
 				outputResult(WAS_UPDATED, rootPath);
 			}
 		}
@@ -96,6 +98,7 @@ public class UpdatePropertiesVersionWithBranchMojo extends AbstractMojo {
 			Path resultFile = targetDir.resolve("updatePropertiesVersionWithBranch.log");
 			log.debug("Will write result {} into {}", updatedOrNot, resultFile.toFile());
 			Files.write(resultFile, updatedOrNot.getBytes(), TRUNCATE_EXISTING, CREATE_NEW);
+			log.debug("Result file exists: {}", resultFile.toFile().exists());
 		} else {
 			log.debug("Not writing result {} to file due to outputResultInFile={}", updatedOrNot, outputResultInFile);
 		}

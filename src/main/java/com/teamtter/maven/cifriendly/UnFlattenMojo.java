@@ -101,8 +101,7 @@ public class UnFlattenMojo extends AbstractMojo {
 		}
 		String text = pomVersionNode.getText();
 		if ((!text.equals(parentPomVersion)) && (ignoreErrors == false)) {
-			log.error("Found version {} in {} instead of version {}", text, path, parentPomVersion);
-			throw new IOException("Unexpected version in pom " + path);
+			log.info("Found version {} in {} instead of version {}. This is usually possible only after a release...", text, path, parentPomVersion);
 		}
 		pomVersionNode.setText(CIFriendlyUtils.REVISION);
 		log.info("Rewriting pom {}", path);
