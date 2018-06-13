@@ -10,7 +10,7 @@
 
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
-	<version>1.0.7-SNAPSHOT</version>
+	<version>1.0.7</version>
 
 	<packaging>maven-plugin</packaging>
 	<name>cifriendly-maven-plugin Maven Mojo</name>
