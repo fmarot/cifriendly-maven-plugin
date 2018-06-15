@@ -2,8 +2,13 @@ package com.teamtter.maven.cifriendly;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,10 +38,10 @@ public class FlattenMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project}", readonly = true)
 	@Setter
-	private MavenProject mavenProject;
-	
+	private MavenProject	mavenProject;
+
 	@Parameter(property = "rootDir", defaultValue = "${session.executionRootDirectory}")
-	private File	rootDir;
+	private File			rootDir;
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -51,19 +56,40 @@ public class FlattenMojo extends AbstractMojo {
 		String pattern = "<version>" + CIFriendlyUtils.REVISION + "</version>";
 		String replacement = "<version>" + version + "</version>";
 
-		PathConsumer pomFileConsumer = path -> {
-			try (Stream<String> lines = Files.lines(path)) {
-				List<String> replaced = lines
-						.peek(line -> {
-							if (line.contains(pattern)) {
-								log.info("Will replace pattern {} with {} in {}", pattern, replacement, path);
-							}
-						})
-						.map(line -> line.replace(pattern, replacement))
-						.collect(Collectors.toList());
-				Files.write(path, replaced);
-			} catch (IOException e) {
-				throw new RuntimeException("Unable to modify file " + path);
+		PathConsumer pomFileConsumer = new PathConsumer() {
+
+			@Override
+			public void accept(Path path) throws IOException {
+				List<Charset> charsetStrategies = Arrays.asList(StandardCharsets.UTF_8, StandardCharsets.ISO_8859_1, StandardCharsets.US_ASCII);
+
+				Iterator<Charset> it = charsetStrategies.iterator();
+				while (it.hasNext()) {
+					Charset charset = it.next();
+					try {
+						accept(path, charset);
+						// if no Exception was thrown, we can quit the loop
+						break;
+					} catch (UncheckedIOException e) {
+						log.info("Exception {} for {} when trying Charset {}... Will try next charset. You should consider encoding your pom in UTF8 ;)", e, path, charset);
+						if (!it.hasNext()) {
+							throw new IOException("No Charset found able to decode file " + path, e);
+						}
+					}
+				}
+			}
+
+			private void accept(Path path, Charset charset) throws IOException {
+				try (Stream<String> lines = Files.lines(path, charset)) {
+					List<String> replaced = lines
+							.peek(line -> {
+								if (line.contains(pattern)) {
+									log.info("Will replace pattern {} with {} in {}", pattern, replacement, path);
+								}
+							})
+							.map(line -> line.replace(pattern, replacement))
+							.collect(Collectors.toList());
+					Files.write(path, replaced);
+				}
 			}
 		};
 
@@ -76,7 +102,7 @@ public class FlattenMojo extends AbstractMojo {
 			throw new MojoFailureException("", e);
 		}
 	}
-	
+
 	/*
 	try {
 		XMLParser parser = new XMLParser();
@@ -84,7 +110,7 @@ public class FlattenMojo extends AbstractMojo {
 		Path pomPath = rootPath.resolve("pom.xml");
 		pomContent = new String(Files.readAllBytes(pomPath), StandardCharsets.UTF_8);
 		final Document doc = parser.parse(new XMLStringSource(pomContent));
-
+	
 		Element pomVersionNode = doc.getChild("/project/version");
 		if (pomVersionNode == null) {
 			pomVersionNode = doc.getChild("/project/parent/version");
@@ -98,7 +124,7 @@ public class FlattenMojo extends AbstractMojo {
 		
 		String revisionVersion = pomRevisionNode.getText(); 
 		
-
+	
 		PathConsumer pomFileConsumer = path -> {
 			XMLParser visitorParser = new XMLParser();
 			String visitorPomContent;
@@ -106,11 +132,11 @@ public class FlattenMojo extends AbstractMojo {
 			
 			TODO BLABLABLA
 		};
-
+	
 		Predicate<Path> isPomFile = path -> path.getFileName().toString().equals(CIFriendlyUtils.POM_XML);
-
+	
 		DirectoryVisitor pomVisitor = new DirectoryVisitor(CIFriendlyUtils.EXCLUDED_DIR_NAMES, isPomFile, pomFileConsumer);
-
+	
 		Files.walkFileTree(rootPath, pomVisitor);
 	} catch (IOException e) {
 		throw new MojoFailureException("", e);
