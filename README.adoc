@@ -58,3 +58,11 @@ mvn com.teamtter.maven:cifriendly-maven-plugin:{var_version}:unflatten
 = Technical details
 
 the library "decentxml" is used to keep pom formatting 
+
+= Tip
+
+To change the version of a CIFriendly multi-module (or single) project, just use:
+
+----
+mvn versions:set-property -DnewVersion=3.0.0-SNAPSHOT -Dproperty=revision
+----
