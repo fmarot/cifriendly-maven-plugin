@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +29,8 @@
 		<compiler.plugin.version>3.3</compiler.plugin.version>
 		<invoker.plugin.version>2.0.0</invoker.plugin.version>
 		<slf4j.version>1.7.5</slf4j.version>
+
+		<simple-xml.version>2.7.1</simple-xml.version>
 	</properties>
 
 	<licenses>
@@ -208,6 +209,13 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.16.16</version>
+		</dependency>
+
+		<dependency>
+			<!-- for serializing our plugin session to be passed between the extension and the dynamically instantiated plugin -->
+			<groupId>org.simpleframework</groupId>
+			<artifactId>simple-xml</artifactId>
+			<version>${simple-xml.version}</version>
 		</dependency>
 
 		<!-- Test libs -->
