@@ -27,49 +27,54 @@ public class CIFriendlySession {
 
 	@Getter
 	@Element(name = "multiModuleProjectDir")
-	private File	multiModuleProjectDir;
+	private File		multiModuleProjectDir;
 
 	/** simple backup of the projects before they were updated by us */
 	@Getter
 	@ElementList(name = "projects", entry = "gav")
-	private Set<GAV> originalProjects = new LinkedHashSet<>();
-	
-	@Getter
-	private String	computedVersion = "1.2.3-TODO-SNAPSHOT";
+	private Set<GAV>	originalProjects	= new LinkedHashSet<>();
 
-	public CIFriendlySession(File multiModuleProjectDir) {
+	@Getter
+	private String		computedVersion		= "1.2.3-TODO-SNAPSHOT";
+
+	@Getter
+	@Element(name = "localRepoBaseDir")
+	private String		localRepoBaseDir;
+
+	public CIFriendlySession(File multiModuleProjectDir, String localRepoBaseDir) {
 		this.multiModuleProjectDir = multiModuleProjectDir;
+		this.localRepoBaseDir = localRepoBaseDir;
 	}
 
 	public void addOriginalProject(GAV gav) {
 		originalProjects.add(gav);
 	}
-	
-	/**
-     * Serializes as a String the given configuration object.
-     * @param session the object to serialize
-     * @return a non null String representation of the given object serialized
-     * @throws IOException if the serialized form cannot be written
-     * @see CIFriendlySession#serializeFrom(String)
-     */
-    public static String serialize(CIFriendlySession session) throws Exception {
-        Strategy strategy = new AnnotationStrategy();
-        Serializer serializer = new Persister(strategy);
-        StringWriter sw = new StringWriter();
-        serializer.write(session, sw);
-        return sw.toString();
-    }
 
-    /**
-     * De-serializes the given string as a {@link CIFriendlySession}.
-     * @param serializedSession the string to de-serialize
-     * @return a non null configuration object
-     * @throws Exception if the given string could not be interpreted by simplexml
-     */
-    public static CIFriendlySession deserializeFrom(String serializedSession) throws Exception {
-        Strategy strategy = new AnnotationStrategy();
-        Serializer serializer = new Persister(strategy);
-        return serializer.read(CIFriendlySession.class, serializedSession);
-    }
+	/**
+	 * Serializes as a String the given configuration object.
+	 * @param session the object to serialize
+	 * @return a non null String representation of the given object serialized
+	 * @throws IOException if the serialized form cannot be written
+	 * @see CIFriendlySession#serializeFrom(String)
+	 */
+	public static String serialize(CIFriendlySession session) throws Exception {
+		Strategy strategy = new AnnotationStrategy();
+		Serializer serializer = new Persister(strategy);
+		StringWriter sw = new StringWriter();
+		serializer.write(session, sw);
+		return sw.toString();
+	}
+
+	/**
+	 * De-serializes the given string as a {@link CIFriendlySession}.
+	 * @param serializedSession the string to de-serialize
+	 * @return a non null configuration object
+	 * @throws Exception if the given string could not be interpreted by simplexml
+	 */
+	public static CIFriendlySession deserializeFrom(String serializedSession) throws Exception {
+		Strategy strategy = new AnnotationStrategy();
+		Serializer serializer = new Persister(strategy);
+		return serializer.read(CIFriendlySession.class, serializedSession);
+	}
 
 }

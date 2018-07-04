@@ -34,7 +34,12 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			final File multiModuleProjectDir = mavenSession.getRequest().getMultiModuleProjectDirectory();
 			log.info("afterSessionStart -> multiModuleProjectDir = {}", multiModuleProjectDir);
 			// TODO: compute branch and target version
-			CIFriendlySession session = new CIFriendlySession(multiModuleProjectDir);
+			
+			
+			String localRepoBaseDir = mavenSession.getLocalRepository().getBasedir();
+			
+			
+			CIFriendlySession session = new CIFriendlySession(multiModuleProjectDir, localRepoBaseDir);
 			sessionHolder.setSession(session);
 		}
 	}
