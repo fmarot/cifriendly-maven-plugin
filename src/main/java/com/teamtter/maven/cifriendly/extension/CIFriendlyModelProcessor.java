@@ -90,14 +90,11 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 			String multimoduleDirCanonical = ciFriendlySession.getMultiModuleProjectDir().getCanonicalPath();
 			String calculatedVersion = ciFriendlySession.getComputedVersion();
 
-			if (StringUtils.containsIgnoreCase(relativePathCanonical, multimoduleDirCanonical)) {	// #reportUpstream
+//			if (StringUtils.containsIgnoreCase(relativePathCanonical, multimoduleDirCanonical)) {	// #reportUpstream
+			if (! relativePathCanonical.startsWith(sessionHolder.getSession().get().getLocalRepoBaseDir())) {
 				updateModel(model, modelSourceFile, ciFriendlySession, relativePathCanonical, multimoduleDirCanonical, calculatedVersion);
 			} else {
-				if (model.getArtifactId().contains("teamtter") || model.getArtifactId() == null) {
-					log.info("skipping Model from {}", modelSourceFile);
-				} else {
-					log.info("skipping Model from {}", modelSourceFile);					
-				}
+				log.debug("skipping Model from {}", modelSourceFile);					
 			}
 
 			// return the original model (but updated)
@@ -125,14 +122,14 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 			log.info("    {} parent {} version is {}", System.identityHashCode(modelParent),  modelParent.getArtifactId(), modelParent.getVersion());
 			
 			File modelParentFile = new File(relativePathCanonical, modelParentRelativePath).getParentFile().getCanonicalFile();
-			if (StringUtils.isNotBlank(modelParentRelativePath)
-					&& StringUtils.containsIgnoreCase(modelParentFile.getCanonicalPath(), multimoduleDirCanonical)) {
+			if (/*StringUtils.isNotBlank(modelParentRelativePath)
+					&& */StringUtils.containsIgnoreCase(modelParentFile.getCanonicalPath(), multimoduleDirCanonical)) {
 				log.info("    Setting version on the parent model ! modelParentFile = {}", modelParentFile);
 				modelParent.setVersion(calculatedVersion);
 			} else {
-//				log.info("    modelParentRelativePath = {}", modelParentRelativePath);
-//				log.info("    modelParentFile = {}", modelParentFile);
-//				log.info("    multimoduleDirCanonical = {}", multimoduleDirCanonical);
+				log.info("    modelParentRelativePath = {}", modelParentRelativePath);
+				log.info("    modelParentFile = {}", modelParentFile);
+				log.info("    multimoduleDirCanonical = {}", multimoduleDirCanonical);
 			}
 		}
 
