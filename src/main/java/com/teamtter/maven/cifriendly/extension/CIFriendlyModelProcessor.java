@@ -35,8 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component(role = ModelProcessor.class)
 public class CIFriendlyModelProcessor extends DefaultModelProcessor {
-	
-	static final Plugin attachModifiedPomsPlugin = buildAttachModifiedPomPlugin();
 
 	@Requirement
 	private CIFriendlyConfiguration	configurationProvider;
@@ -45,7 +43,8 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 	private CIFriendlySessionHolder	sessionHolder;
 
 	@Requirement
-	private LegacySupport			legacySupport	= null;	// FIXME: it would be better to get the mavenSession directly than to use this legacySupport, but don't know how to get it...
+	private LegacySupport			legacySupport	= null;	// it would be better to get the mavenSession directly but don't know how to get it...
+	// private MavenSession mavenSession; 
 
 	public CIFriendlyModelProcessor() {
 		super();
@@ -94,10 +93,10 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 			if (StringUtils.containsIgnoreCase(relativePathCanonical, multimoduleDirCanonical)) {	// #reportUpstream
 				updateModel(model, modelSourceFile, ciFriendlySession, relativePathCanonical, multimoduleDirCanonical, calculatedVersion);
 			} else {
-				if (model.getArtifactId().contains("teamtter")) {
+				if (model.getArtifactId().contains("teamtter") || model.getArtifactId() == null) {
 					log.info("skipping Model from {}", modelSourceFile);
 				} else {
-					log.debug("skipping Model from {}", modelSourceFile);					
+					log.info("skipping Model from {}", modelSourceFile);					
 				}
 			}
 
@@ -167,48 +166,77 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 			modelBuild.setPlugins(new ArrayList<>());
 		}
 
-		if (! modelBuild.getPlugins().contains(attachModifiedPomsPlugin) ) {
-			modelBuild.getPlugins().add(0, attachModifiedPomsPlugin);
-		}
-	}
-	
-	/** warning: we should make sure the plugin is not explicitly defined in any pom */
-	private static Plugin buildAttachModifiedPomPlugin() {
-		String pluginVersion = "";
+		Optional<Plugin> pluginOptional = modelBuild.getPlugins().stream()
+				.filter(x -> CIFriendlyUtils.EXTENSION_GROUP_ID.equalsIgnoreCase(x.getGroupId())
+						&& CIFriendlyUtils.EXTENSION_ARTIFACT_ID.equalsIgnoreCase(x.getArtifactId()))
+				.findFirst();
 
-		String pomPropertiesResource = "/META-INF/maven/" + CIFriendlyUtils.EXTENSION_GROUP_ID + "/" + CIFriendlyUtils.EXTENSION_ARTIFACT_ID + "/pom.properties";
-		try (InputStream inputStream = CIFriendlyModelProcessor.class.getResourceAsStream(pomPropertiesResource)) {
+		StringBuilder pluginVersion = new StringBuilder();
+
+		try (InputStream inputStream = getClass()
+				.getResourceAsStream("/META-INF/maven/" + CIFriendlyUtils.EXTENSION_GROUP_ID + "/"
+						+ CIFriendlyUtils.EXTENSION_ARTIFACT_ID + "/pom" + ".properties")) {
 			Properties properties = new Properties();
 			properties.load(inputStream);
-			pluginVersion = properties.getProperty("version");
-		} catch (IOException e) {
-			log.error("Unable to build plugin from " + pomPropertiesResource, e);
+			pluginVersion.append(properties.getProperty("version"));
+		} catch (IOException ignored) {
+			// TODO we should not ignore in case we have to reuse it
+			log.warn(ignored.getMessage(), ignored);
 		}
 
-		Plugin plugin = new Plugin();
-		plugin.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
-		plugin.setArtifactId(CIFriendlyUtils.EXTENSION_ARTIFACT_ID);
-		plugin.setVersion(pluginVersion.toString());
+		Plugin plugin = pluginOptional.orElseGet(() -> {
+			Plugin plugin2 = new Plugin();
+			plugin2.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
+			plugin2.setArtifactId(CIFriendlyUtils.EXTENSION_ARTIFACT_ID);
+			plugin2.setVersion(pluginVersion.toString());
 
-		plugin.setExecutions(new ArrayList<>());
+			log.info("    Added plugin {} on build of {}", plugin2, model.getArtifactId());
+			model.getBuild().getPlugins().add(0, plugin2);		// always add first
+			return plugin2;
+		});
 
-		PluginExecution pluginExecution = new PluginExecution();
+		if (Objects.isNull(plugin.getExecutions())) {
+			plugin.setExecutions(new ArrayList<>());
+		}
+
 		String pluginRunPhase = System.getProperty("cifriendly.pom-replacement-phase", "prepare-package");
-		pluginExecution.setPhase(pluginRunPhase);
+		Optional<PluginExecution> pluginExecutionOptional = plugin.getExecutions().stream()
+				.filter(x -> pluginRunPhase.equalsIgnoreCase(x.getPhase())).findFirst();
 
-		plugin.getExecutions().add(pluginExecution);
+		PluginExecution pluginExecution = pluginExecutionOptional.orElseGet(() -> {
+			PluginExecution pluginExecution2 = new PluginExecution();
+			pluginExecution2.setPhase(pluginRunPhase);
 
-		pluginExecution.setGoals(new ArrayList<>());
-		
-		pluginExecution.getGoals().add(CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS);
+			plugin.getExecutions().add(pluginExecution2);
+			return pluginExecution2;
+		});
 
-		plugin.setDependencies(new ArrayList<>());
+		if (Objects.isNull(pluginExecution.getGoals())) {
+			pluginExecution.setGoals(new ArrayList<>());
+		}
 
-		Dependency dependency = new Dependency();
-		dependency.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
-		dependency.setArtifactId(CIFriendlyUtils.EXTENSION_ARTIFACT_ID);
-		dependency.setVersion(pluginVersion.toString());
-		plugin.getDependencies().add(dependency);
-		return plugin;
+		if (!pluginExecution.getGoals().contains(CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS)) {
+			pluginExecution.getGoals().add(CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS);
+		}
+
+		if (Objects.isNull(plugin.getDependencies())) {
+			plugin.setDependencies(new ArrayList<>());
+		}
+
+		Optional<Dependency> dependencyOptional = plugin.getDependencies().stream()
+				.filter(x -> CIFriendlyUtils.EXTENSION_GROUP_ID.equalsIgnoreCase(x.getGroupId())
+						&& CIFriendlyUtils.EXTENSION_ARTIFACT_ID.equalsIgnoreCase(x.getArtifactId()))
+				.findFirst();
+
+		// add the dependency on the plugin if not already present
+		Dependency dependency = dependencyOptional.orElseGet(() -> {
+			Dependency dependency2 = new Dependency();
+			dependency2.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
+			dependency2.setArtifactId(CIFriendlyUtils.EXTENSION_ARTIFACT_ID);
+			dependency2.setVersion(pluginVersion.toString());
+			log.info("    Added dependency {} on plugin {}", dependency2, plugin);
+			plugin.getDependencies().add(dependency2);
+			return dependency2;
+		});
 	}
 }
