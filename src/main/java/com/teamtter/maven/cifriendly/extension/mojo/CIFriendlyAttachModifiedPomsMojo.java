@@ -48,7 +48,7 @@ public class CIFriendlyAttachModifiedPomsMojo extends AbstractMojo {
         try {
             CIFriendlySession ciFriendlySession = CIFriendlySession.deserializeFrom(serializedSession);
             CIFriendlyUtils.attachModifiedPomFilesToTheProject(mavenSession.getAllProjects(),
-                    ciFriendlySession.getProjects(),
+                    ciFriendlySession.getOriginalProjects(),
                     ciFriendlySession.getComputedVersion(),
                     log);
             mavenSession.getUserProperties().setProperty(CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY, UPDATED_POMS_ALREADY_ATTACHED);

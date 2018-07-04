@@ -13,7 +13,7 @@ public class CIFriendlySessionHolder {
 	private Optional<CIFriendlySession> session;
 	
 	public void setSession(CIFriendlySession session) {
-		this.session = Optional.of(session); 
+		this.session = Optional.ofNullable(session); 
 	}
 	
 }

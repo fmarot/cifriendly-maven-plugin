@@ -17,9 +17,11 @@ import org.simpleframework.xml.core.Persister;
 import org.simpleframework.xml.strategy.Strategy;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /** The XML annotations are for for serializing our plugin session to be passed between the extension and the dynamically instantiated plugin */
-@Root(name = "jgitver")
+@Root(name = "cifriendly")
+@NoArgsConstructor	// for jaxb
 @Default(DefaultType.FIELD)
 public class CIFriendlySession {
 
@@ -27,10 +29,10 @@ public class CIFriendlySession {
 	@Element(name = "multiModuleProjectDir")
 	private File	multiModuleProjectDir;
 
+	/** simple backup of the projects before they were updated by us */
 	@Getter
 	@ElementList(name = "projects", entry = "gav")
-	private Set<GAV> projects = new LinkedHashSet<>();
-	//	private String	originalVersion;
+	private Set<GAV> originalProjects = new LinkedHashSet<>();
 	
 	@Getter
 	private String	computedVersion = "1.2.3-TODO-SNAPSHOT";
@@ -39,8 +41,8 @@ public class CIFriendlySession {
 		this.multiModuleProjectDir = multiModuleProjectDir;
 	}
 
-	public void addProject(GAV gav) {
-		projects.add(gav);
+	public void addOriginalProject(GAV gav) {
+		originalProjects.add(gav);
 	}
 	
 	/**

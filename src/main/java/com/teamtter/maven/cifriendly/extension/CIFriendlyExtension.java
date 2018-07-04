@@ -22,6 +22,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 	@Requirement
 	private ModelProcessor			modelProcessor;
 
+	@Requirement
 	private CIFriendlySessionHolder	sessionHolder;
 
 	@Override
@@ -31,8 +32,10 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			sessionHolder.setSession(null);
 		} else {
 			final File multiModuleProjectDir = mavenSession.getRequest().getMultiModuleProjectDirectory();
-
-			sessionHolder.setSession(new CIFriendlySession(multiModuleProjectDir));
+			log.info("afterSessionStart -> multiModuleProjectDir = {}", multiModuleProjectDir);
+			// TODO: compute branch and target version
+			CIFriendlySession session = new CIFriendlySession(multiModuleProjectDir);
+			sessionHolder.setSession(session);
 		}
 	}
 
@@ -44,13 +47,25 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 	@Override
 	public void afterProjectsRead(MavenSession mavenSession) throws MavenExecutionException {
 		if (!CIFriendlyUtils.shouldSkip(mavenSession)) {
+
+			// In *my understanding*, we simply cannot set the version on the projects (MavenProject class)
+			// because they should be read-only and mostly immutable. Besides, it is too late, they may
+			// have already been interpreted by other plugin/extension mechanisms...
+			// So we have to implement a modelProcessor replacement to tackle the version change in the 
+			// Model (org.apache.maven.model.Model) using a custom ModelProcessor.
+			
+			//	mavenSession.getAllProjects().forEach(project -> {
+			//		project.setVersion("TOTO");
+			//		log.info("" + project.getArtifactId());
+			//	});
+
 			File projectBaseDir = mavenSession.getCurrentProject().getBasedir();
 			if (projectBaseDir != null) {
 
-				log.info(CIFriendlyUtils.EXTENSION_PREFIX + " is about to change project(s) version(s)");
+				log.info(CIFriendlyUtils.EXTENSION_PREFIX + " has dinamically changes project(s) version(s)");
 
 				CIFriendlySession session = sessionHolder.getSession().get();
-				session.getProjects().forEach(gav -> {
+				session.getOriginalProjects().forEach(gav -> {
 					String msg = "    " + gav.toString() + " -> " + session.getComputedVersion();
 					log.info(msg);
 				});

@@ -82,7 +82,7 @@ public class CIFriendlyUtils {
 	 * Creates temporary file to save updated pom mode.
 	 */
 	private static File createPomDumpFile() throws IOException {
-		File tmp = File.createTempFile("pom", ".jgitver-maven-plugin.xml");
+		File tmp = File.createTempFile("pom", ".cifriendly-maven-plugin.xml");
 		tmp.deleteOnExit();
 		return tmp;
 	}
