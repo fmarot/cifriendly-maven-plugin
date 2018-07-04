@@ -35,15 +35,17 @@ public class CIFriendlySession {
 	private Set<GAV>	originalProjects	= new LinkedHashSet<>();
 
 	@Getter
-	private String		computedVersion		= "1.2.3-TODO-SNAPSHOT";
+	@Element // ??? (name = "computedVersion")
+	private String		computedVersion;
 
 	@Getter
 	@Element(name = "localRepoBaseDir")
 	private String		localRepoBaseDir;
 
-	public CIFriendlySession(File multiModuleProjectDir, String localRepoBaseDir) {
+	public CIFriendlySession(File multiModuleProjectDir, String localRepoBaseDir, String computedVersion) {
 		this.multiModuleProjectDir = multiModuleProjectDir;
 		this.localRepoBaseDir = localRepoBaseDir;
+		this.computedVersion = computedVersion;
 	}
 
 	public void addOriginalProject(GAV gav) {
