@@ -1,4 +1,3 @@
-// @formatter:off
 package com.teamtter.maven.cifriendly.extension.mojo;
 
 import java.util.Objects;
@@ -37,8 +36,7 @@ public class CIFriendlyAttachModifiedPomsMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         if (Objects.isNull(mavenSession.getUserProperties().get(CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY))) {
-            log.warn(GOAL_ATTACH_MODIFIED_POMS + "shouldn't be executed alone. The Mojo "
-                    + "should be dynamically added to the build by the extension");
+            log.warn(GOAL_ATTACH_MODIFIED_POMS + "shouldn't be executed alone. The Mojo should be dynamically added to the build by the extension");
             return;
         }
 
@@ -53,12 +51,10 @@ public class CIFriendlyAttachModifiedPomsMojo extends AbstractMojo {
             CIFriendlySession ciFriendlySession = CIFriendlySession.deserializeFrom(serializedSession);
             CIFriendlyUtils.attachModifiedPomFilesToTheProject(mavenSession.getAllProjects(),
                     ciFriendlySession.getOriginalProjects(),
-                    ciFriendlySession.getComputedVersion(),
-                    log);
+                    ciFriendlySession.getComputedVersion());
             mavenSession.getUserProperties().setProperty(CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY, UPDATED_POMS_ALREADY_ATTACHED);
         } catch (Exception ex) {
-            throw new MojoExecutionException("Unable to execute goal: "
-                    + CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS, ex);
+            throw new MojoExecutionException("Unable to execute goal: " + CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS, ex);
         }
     }
 }

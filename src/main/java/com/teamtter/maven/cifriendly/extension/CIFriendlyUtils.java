@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -14,19 +15,33 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.slf4j.Logger;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class CIFriendlyUtils {
 
 	public static final String	EXTENSION_PREFIX				= "cifriendly";
 	public static final String	EXTENSION_GROUP_ID				= "com.teamtter.maven";
 	public static final String	EXTENSION_ARTIFACT_ID			= "cifriendly-maven-plugin";
+	private static final String	CUSTOM_POM_FILENAME				= "pom-" + EXTENSION_ARTIFACT_ID + ".xml";
 	public static final String	EXTENSION_SKIP					= EXTENSION_PREFIX + ".skip";
 	public static final String	SESSION_MAVEN_PROPERTIES_KEY	= EXTENSION_PREFIX + ".session";
 
+	/** if user hav defined this variable, use this one, otherwise return the system variable */
+	public static Optional<String> getUserOrEnvVariable(String variable, MavenSession session) {
+		Optional<String> property = null;
+		String userProp = session.getUserProperties().getProperty(variable);
+		if (userProp == null) {
+			property = Optional.ofNullable(session.getSystemProperties().getProperty(variable));
+		} else {
+			property = Optional.of(userProp);
+		}
+		return property;
+	}
+
 	public static boolean shouldSkip(MavenSession mavenSession) {
-		return Boolean.parseBoolean(mavenSession.getSystemProperties().getProperty(EXTENSION_SKIP, "false"))
-				|| Boolean.parseBoolean(mavenSession.getUserProperties().getProperty(EXTENSION_SKIP, "false"));
+		return Boolean.parseBoolean(getUserOrEnvVariable(EXTENSION_SKIP, mavenSession).orElse("false"));
 	}
 
 	/**
@@ -38,17 +53,20 @@ public class CIFriendlyUtils {
 	* @throws XmlPullParserException if project model cannot be interpreted correctly
 	*/
 	public static void attachModifiedPomFilesToTheProject(List<MavenProject> projects,
-			Set<GAV> gavs, String version,
-			Logger logger) throws IOException, XmlPullParserException {
+			Set<GAV> gavs, String version) throws IOException, XmlPullParserException {
+
+		// cannot put the custom poms inside each 'target' because they are created only at session start and each individual 'target' may be deleted later => create a specific temp dir
+		File tempDir = Files.createTempDirectory(EXTENSION_ARTIFACT_ID).toFile();
+		tempDir.deleteOnExit();
+
 		for (MavenProject project : projects) {
 			Model model = loadInitialModel(project.getFile());
 			GAV initalProjectGAV = GAV.from(model);     // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
 
-			logger.debug("about to change file pom for: " + initalProjectGAV);
+			log.debug("about to change file pom for: " + initalProjectGAV);
 
 			if (gavs.contains(initalProjectGAV)) {
 				model.setVersion(version);
-
 				if (model.getScm() != null && project.getModel().getScm() != null) {
 					model.getScm().setTag(project.getModel().getScm().getTag());
 				}
@@ -56,20 +74,23 @@ public class CIFriendlyUtils {
 
 			if (model.getParent() != null) {
 				GAV parentGAV = GAV.from(model.getParent());    // SUPPRESS CHECKSTYLE AbbreviationAsWordInName
-
 				if (gavs.contains(parentGAV)) {
 					// parent has been modified
 					model.getParent().setVersion(version);
 				}
 			}
 
-			File newPom = createPomDumpFile();
+			File newPom = new File(tempDir, computeProjectCustomPomFilename(project));
+			newPom.getParentFile().mkdirs();
 			writeModelPom(model, newPom);
-			logger.debug("    new pom file created for " + initalProjectGAV + " under " + newPom);
+			log.info("    new pom file created for " + initalProjectGAV + " under " + newPom);
 
-			setProjectPomFile(project, newPom, logger);
-			logger.debug("    pom file set");
+			project.setPomFile(newPom);	// requires Maven version > 3.2.4
 		}
+	}
+
+	private static String computeProjectCustomPomFilename(MavenProject project) {
+		return project.getGroupId() + "---" + project.getArtifactId() + "---" + project.getVersion() + "---" + CUSTOM_POM_FILENAME;
 	}
 
 	private static Model loadInitialModel(File pomFile) throws IOException, XmlPullParserException {
@@ -78,64 +99,11 @@ public class CIFriendlyUtils {
 		}
 	}
 
-	/**
-	 * Creates temporary file to save updated pom mode.
-	 */
-	private static File createPomDumpFile() throws IOException {
-		File tmp = File.createTempFile("pom", ".cifriendly-maven-plugin.xml");
-		tmp.deleteOnExit();
-		return tmp;
-	}
-
-	/**
-	 * Writes updated model to temporary pom file.
-	 */
+	/** Writes updated model to temporary pom file. */
 	private static void writeModelPom(Model mavenModel, File pomFile) throws IOException {
 		try (FileWriter fileWriter = new FileWriter(pomFile)) {
 			new MavenXpp3Writer().write(fileWriter, mavenModel);
 		}
-	}
-
-	/**
-	 * Changes the pom file of the given project.
-	 * @param project the project to change the pom
-	 * @param newPom the pom file to set on the project
-	 * @param logger a logger to use 
-	 */
-	public static void setProjectPomFile(MavenProject project, File newPom, Logger logger) {
-		try {
-			project.setPomFile(newPom);
-		} catch (Throwable unused) {
-			logger.warn("maven version might be <= 3.2.4, changing pom file using old mechanism");
-			File initialBaseDir = project.getBasedir();
-			project.setFile(newPom);
-			File newBaseDir = project.getBasedir();
-			try {
-				if (!initialBaseDir.getCanonicalPath().equals(newBaseDir.getCanonicalPath())) {
-					changeBaseDir(project, initialBaseDir);
-				}
-			} catch (Exception ex) {
-				GAV gav = GAV.from(project);
-				logger.warn("cannot reset basedir of project " + gav.toString(), ex);
-			}
-		}
-	}
-
-	/**
-	 * Changes basedir(dangerous).
-	 *
-	 * @param project project.
-	 * @param initialBaseDir initialBaseDir.
-	 * @throws NoSuchFieldException NoSuchFieldException.
-	 * @throws IllegalAccessException IllegalAccessException.
-	 */
-	// WARNING: It breaks the build process, because it changes the basedir to 'tmp'/... where other plugins are not able to
-	// find the classes and resources during the phases.
-	public static void changeBaseDir(MavenProject project, File initialBaseDir) throws NoSuchFieldException,
-			IllegalAccessException {
-		Field basedirField = project.getClass().getField("basedir");
-		basedirField.setAccessible(true);
-		basedirField.set(project, initialBaseDir);
 	}
 
 }
