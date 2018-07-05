@@ -11,14 +11,16 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+
+import javax.inject.Inject;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.building.ModelProcessor;
-import org.codehaus.plexus.PlexusContainer;
+import org.apache.maven.shared.release.versions.DefaultVersionInfo;
+import org.apache.maven.shared.release.versions.VersionParseException;
 import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 
 import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
@@ -26,19 +28,19 @@ import de.pdark.decentxml.XMLParser;
 import de.pdark.decentxml.XMLStringSource;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j	// Starting with Maven 3.1.0, SLF4J Logger can be used directly too, without Plexus
 @Component(role = AbstractMavenLifecycleParticipant.class, hint = "cifriendly")
 public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 
 	private static final String		SNAPSHOT	= "-SNAPSHOT";
 
-	@Requirement
-	private PlexusContainer			container;
+//	@Inject
+//	private PlexusContainer			container;
 
-	@Requirement
-	private ModelProcessor			modelProcessor;
+//	@Inject
+//	private ModelProcessor			modelProcessor;
 
-	@Requirement
+	@Inject	
 	private CIFriendlySessionHolder	sessionHolder;
 
 	@Override
@@ -47,19 +49,54 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			log.info("    " + CIFriendlyUtils.EXTENSION_PREFIX + "execution has been skipped by request of the user");
 			sessionHolder.setSession(null);
 		} else {
+			Optional<String> scmBranch = CIFriendlyUtils.getUserOrEnvVariable("scmBranch", mavenSession);
+			log.info("Received parameter scmBranch={}", scmBranch);
+			
 			final File multiModuleProjectDir = mavenSession.getRequest().getMultiModuleProjectDirectory();
 			log.info("afterSessionStart -> multiModuleProjectDir = {}", multiModuleProjectDir);
-			// TODO: compute branch and target version
 
 			String localRepoBaseDir = mavenSession.getLocalRepository().getBasedir();
 			File startingPom = mavenSession.getRequest().getPom();
-			String branchName = fetchGitBranch(startingPom);
+			String branchName = scmBranch.orElseGet(() -> fetchGitBranch(startingPom));
 			String currentVersion = fetchCurrentVersionFromPom(startingPom);
 			String newVersion = computeNewVersion(currentVersion, branchName);
 
 			CIFriendlySession session = new CIFriendlySession(multiModuleProjectDir, localRepoBaseDir, newVersion);
 			sessionHolder.setSession(session);
+
+			alterMavenSessionIfMavenReleaseOngoing(mavenSession, currentVersion);
 		}
+	}
+
+	/** if we are in a release, then we must adapt the behavior of the release plugin otherwise the resulting pom
+	 * will contain the branch suffix in the version ! Which we do not want. We only want to add +1 to the version,
+	 * not add the suffix. */
+	private void alterMavenSessionIfMavenReleaseOngoing(MavenSession mavenSession, String currentVersion) {
+		if (ongoingMavenRelease(mavenSession)) {
+			if (! CIFriendlyUtils.getUserOrEnvVariable("developmentVersion", mavenSession).isPresent()) {
+				String nextNewVersion = computeNextDevelopmentVersion(currentVersion);
+				log.info("Ongoing Maven release detected and -DdevelopmentVersion not explicitly set"
+						+ " => will force the -DdevelopmentVersion of the release plugin to: {}", nextNewVersion);
+				mavenSession.getUserProperties().put("developmentVersion", nextNewVersion);
+			}
+		}
+	}
+
+	private String computeNextDevelopmentVersion(String currentVersion) {
+		String developmentVersion;
+		try {
+			developmentVersion = new DefaultVersionInfo(currentVersion).getNextVersion().getSnapshotVersionString();
+		} catch (VersionParseException e) {
+			developmentVersion = currentVersion + "-ERROR";
+			log.error("Unable to compute next developmentVersion version from " + currentVersion + ". "
+					+ "New developmentVersion will be set to " + currentVersion, e);
+		}
+		return developmentVersion; 
+	}
+
+	private boolean ongoingMavenRelease(MavenSession mavenSession) {
+		boolean isRelease = mavenSession.getRequest().getGoals().stream().anyMatch(goal -> goal.endsWith("release:prepare") || goal.endsWith("release:perform"));
+		return isRelease;
 	}
 
 	private String computeNewVersion(String currentVersion, String branchName) {
@@ -107,16 +144,25 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 		return version;
 	}
 
-	private String fetchGitBranch(File startingPom) throws MavenExecutionException {
+	private String fetchGitBranch(File startingPom) {
 		try {
-			Process p = new ProcessBuilder("git", "rev-parse", "--abbrev-ref", "HEAD").directory(startingPom.getParentFile()).start();
+			File rootBuildDir = startingPom.getParentFile();
+			String rootBuildDirPath = rootBuildDir.toPath().normalize().toString().replace("\\", "/");	
+			log.info("rootBuildDirPath = {}", rootBuildDirPath);
+			if (rootBuildDirPath.contains("target/checkout")) {
+				rootBuildDir = new File(rootBuildDirPath.substring(0, rootBuildDirPath.indexOf("target/checkout")));
+				log.warn("Detected execution from maven release-like plugin "
+						+"=> will try to find the branch not in {} but in {}", rootBuildDirPath, rootBuildDir);
+			}
+			
+			Process p = new ProcessBuilder("git", "rev-parse", "--abbrev-ref", "HEAD").directory(rootBuildDir).start();
 			p.waitFor();
 			BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String branch = br.readLine().trim();
 			return branch;
 		} catch (IOException | InterruptedException e) {
 			log.error("", e);
-			throw new MavenExecutionException("error when fetching git branch of " + startingPom, e);
+			throw new RuntimeException("error when fetching git branch of " + startingPom, e);
 		}
 	}
 

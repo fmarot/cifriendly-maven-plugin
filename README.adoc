@@ -14,6 +14,12 @@ https://github.com/mojohaus/flatten-maven-plugin/issues/51
 
 http://blog.soebes.de/blog/2017/04/02/maven-pom-files-without-a-version-in-it/
 
+== Extension
+
+TODO:
+
+on specific content in mavenSession.getRequest().getGoals() => we should autoskip the plugin to avoid messing with incompatible goals
+
 == flatten
 
 Replace the '${revision}' variables in all pom.xml of the MultiModule Maven Project with the real hardcoded version found in the upper pom's properties/revision node.

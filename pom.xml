@@ -10,7 +10,7 @@
 
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
-	<version>1.0.8-SNAPSHOT</version>
+	<version>1.0.8</version>
 
 	<packaging>maven-plugin</packaging>
 	<name>cifriendly-maven-plugin Maven Mojo</name>
@@ -190,6 +190,13 @@
 		</dependency>
 
 		<!-- Misc -->
+
+		<dependency>
+			<!-- release plugin code is used to compute next versions when releasing -->
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-release-plugin</artifactId>
+			<version>2.5.3</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>

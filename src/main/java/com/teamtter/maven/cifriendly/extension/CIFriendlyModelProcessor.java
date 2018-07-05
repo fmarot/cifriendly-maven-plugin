@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component(role = ModelProcessor.class)
 public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 
-	static final Plugin attachModifiedPomsPlugin = buildAttachModifiedPomPlugin();
+	static final Plugin				attachModifiedPomsPlugin	= buildAttachModifiedPomPlugin();
 
 	@Requirement
 	private CIFriendlyConfiguration	configurationProvider;
@@ -45,7 +45,7 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 	private CIFriendlySessionHolder	sessionHolder;
 
 	@Requirement
-	private LegacySupport			legacySupport	= null;	// FIXME: it would be better to get the mavenSession directly than to use this legacySupport, but don't know how to get it...
+	private LegacySupport			legacySupport				= null;	// FIXME: it would be better to get the mavenSession directly than to use this legacySupport, but don't know how to get it...
 
 	public CIFriendlyModelProcessor() {
 		super();
@@ -91,11 +91,11 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 			String multimoduleDirCanonical = ciFriendlySession.getMultiModuleProjectDir().getCanonicalPath();
 			String calculatedVersion = ciFriendlySession.getComputedVersion();
 
-//			if (StringUtils.containsIgnoreCase(relativePathCanonical, multimoduleDirCanonical)) {	// #reportUpstream
-			if (! relativePathCanonical.startsWith(sessionHolder.getSession().get().getLocalRepoBaseDir())) {
+			//			if (StringUtils.containsIgnoreCase(relativePathCanonical, multimoduleDirCanonical)) {	// #reportUpstream
+			if (!relativePathCanonical.startsWith(sessionHolder.getSession().get().getLocalRepoBaseDir())) {
 				updateModel(model, modelSourceFile, ciFriendlySession, relativePathCanonical, multimoduleDirCanonical, calculatedVersion);
 			} else {
-				log.debug("skipping Model from {}", modelSourceFile);					
+				log.debug("skipping Model from {}", modelSourceFile);
 			}
 
 			// return the original model (but updated)
@@ -119,9 +119,9 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 		if (Objects.nonNull(modelParent)) {
 			// if the parent is part of the multi module project, let's update the parent version
 			String modelParentRelativePath = modelParent.getRelativePath();
-			
-			log.info("    {} parent {} version is {}", System.identityHashCode(modelParent),  modelParent.getArtifactId(), modelParent.getVersion());
-			
+
+			log.info("    {} parent {} version is {}", System.identityHashCode(modelParent), modelParent.getArtifactId(), modelParent.getVersion());
+
 			File modelParentFile = new File(relativePathCanonical, modelParentRelativePath).getParentFile().getCanonicalFile();
 			if (/*StringUtils.isNotBlank(modelParentRelativePath)
 					&& */StringUtils.containsIgnoreCase(modelParentFile.getCanonicalPath(), multimoduleDirCanonical)) {
@@ -154,7 +154,7 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 
 	private void addAttachPomMojo(Model model) {
 		log.info("    WILL addAttachPomMojo on {}", model);
-		
+
 		Build modelBuild = model.getBuild();
 		if (Objects.isNull(modelBuild)) {
 			modelBuild = new Build();
@@ -164,7 +164,7 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 			modelBuild.setPlugins(new ArrayList<>());
 		}
 
-		if (! modelBuild.getPlugins().contains(attachModifiedPomsPlugin) ) {
+		if (!modelBuild.getPlugins().contains(attachModifiedPomsPlugin)) {
 			modelBuild.getPlugins().add(0, attachModifiedPomsPlugin);
 		}
 	}
@@ -194,12 +194,9 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 		pluginExecution.setPhase(pluginRunPhase);
 
 		plugin.getExecutions().add(pluginExecution);
-
-			pluginExecution.setGoals(new ArrayList<>());
-
-			pluginExecution.getGoals().add(CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS);
-
-			plugin.setDependencies(new ArrayList<>());
+		pluginExecution.setGoals(new ArrayList<>());
+		pluginExecution.getGoals().add(CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS);
+		plugin.setDependencies(new ArrayList<>());
 
 		Dependency dependency = new Dependency();
 		dependency.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
