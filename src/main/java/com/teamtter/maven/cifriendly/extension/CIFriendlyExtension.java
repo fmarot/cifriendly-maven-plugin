@@ -34,13 +34,13 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 
 	private static final String		SNAPSHOT	= "-SNAPSHOT";
 
-//	@Inject
-//	private PlexusContainer			container;
+	//	@Inject
+	//	private PlexusContainer			container;
 
-//	@Inject
-//	private ModelProcessor			modelProcessor;
+	//	@Inject
+	//	private ModelProcessor			modelProcessor;
 
-	@Inject	
+	@Inject
 	private CIFriendlySessionHolder	sessionHolder;
 
 	@Override
@@ -51,7 +51,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 		} else {
 			Optional<String> scmBranch = CIFriendlyUtils.getUserOrEnvVariable("scmBranch", mavenSession);
 			log.info("Received parameter scmBranch={}", scmBranch);
-			
+
 			final File multiModuleProjectDir = mavenSession.getRequest().getMultiModuleProjectDirectory();
 			log.info("afterSessionStart -> multiModuleProjectDir = {}", multiModuleProjectDir);
 
@@ -73,7 +73,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 	 * not add the suffix. */
 	private void alterMavenSessionIfMavenReleaseOngoing(MavenSession mavenSession, String currentVersion) {
 		if (ongoingMavenRelease(mavenSession)) {
-			if (! CIFriendlyUtils.getUserOrEnvVariable("developmentVersion", mavenSession).isPresent()) {
+			if (!CIFriendlyUtils.getUserOrEnvVariable("developmentVersion", mavenSession).isPresent()) {
 				String nextNewVersion = computeNextDevelopmentVersion(currentVersion);
 				log.info("Ongoing Maven release detected and -DdevelopmentVersion not explicitly set"
 						+ " => will force the -DdevelopmentVersion of the release plugin to: {}", nextNewVersion);
@@ -91,7 +91,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			log.error("Unable to compute next developmentVersion version from " + currentVersion + ". "
 					+ "New developmentVersion will be set to " + currentVersion, e);
 		}
-		return developmentVersion; 
+		return developmentVersion;
 	}
 
 	private boolean ongoingMavenRelease(MavenSession mavenSession) {
@@ -147,14 +147,14 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 	private String fetchGitBranch(File startingPom) {
 		try {
 			File rootBuildDir = startingPom.getParentFile();
-			String rootBuildDirPath = rootBuildDir.toPath().normalize().toString().replace("\\", "/");	
+			String rootBuildDirPath = rootBuildDir.toPath().normalize().toString().replace("\\", "/");
 			log.info("rootBuildDirPath = {}", rootBuildDirPath);
 			if (rootBuildDirPath.contains("target/checkout")) {
 				rootBuildDir = new File(rootBuildDirPath.substring(0, rootBuildDirPath.indexOf("target/checkout")));
 				log.warn("Detected execution from maven release-like plugin "
-						+"=> will try to find the branch not in {} but in {}", rootBuildDirPath, rootBuildDir);
+						+ "=> will try to find the branch not in {} but in {}", rootBuildDirPath, rootBuildDir);
 			}
-			
+
 			Process p = new ProcessBuilder("git", "rev-parse", "--abbrev-ref", "HEAD").directory(rootBuildDir).start();
 			p.waitFor();
 			BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
