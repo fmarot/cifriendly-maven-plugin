@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>com.oleamedical.oleasphere</groupId>
 		<artifactId>oleasphere-company-pom</artifactId>
-		<version>0.0.21</version>
+		<version>0.2.2</version>
 	</parent>
 
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
-	<version>1.0.8</version>
+	<version>1.0.9-extension-SNAPSHOT</version>
 
 	<packaging>maven-plugin</packaging>
 	<name>cifriendly-maven-plugin Maven Mojo</name>
