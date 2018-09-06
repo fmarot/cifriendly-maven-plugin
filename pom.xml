@@ -9,7 +9,7 @@
 
 	<groupId>com.teamtter.maven</groupId>
 	<artifactId>cifriendly-maven-plugin</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.10-SNAPSHOT</version>
 
 	<packaging>maven-plugin</packaging>
 	<name>cifriendly-maven-plugin Maven Mojo</name>
@@ -51,7 +51,7 @@
 		<connection>scm:git:git@github.com:fmarot/cifriendly-maven-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:fmarot/cifriendly-maven-plugin.git</developerConnection>
 		<url>https://github.com/fmarot/cifriendly-maven-plugin</url>
-		<tag>cifriendly-maven-plugin-1.0.9</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 
