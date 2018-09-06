@@ -53,11 +53,11 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			log.info("afterSessionStart -> multiModuleProjectDir = {}", multiModuleProjectDir);
 
 			String localRepoBaseDir = mavenSession.getLocalRepository().getBasedir();
-			
+
 			File startingPom = mavenSession.getRequest().getPom();
 			String currentVersion = fetchCurrentVersionFromPom(startingPom);
-			
-			String newVersion = computeNewVersion(mavenSession);
+
+			String newVersion = computeNewVersion(mavenSession, currentVersion);
 
 			CIFriendlySession session = new CIFriendlySession(multiModuleProjectDir, localRepoBaseDir, newVersion);
 			sessionHolder.setSession(session);
@@ -65,21 +65,19 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			alterMavenSessionIfMavenReleaseOngoing(mavenSession, currentVersion);
 		}
 	}
-	
 
-	private String computeNewVersion(MavenSession mavenSession) throws MavenExecutionException {
+	private String computeNewVersion(MavenSession mavenSession, String currentVersion) throws MavenExecutionException {
 		Optional<String> newVersion = CIFriendlyUtils.getUserOrEnvVariable(CIFriendlyUtils.EXTENSION_PREFIX + ".newVersion", mavenSession);
-		return newVersion.orElse(computeNewVersionFromGit(mavenSession));
+		return newVersion.orElseGet(() -> computeNewVersionFromGit(mavenSession, currentVersion));
 	}
 
-	private String computeNewVersionFromGit(MavenSession mavenSession) throws MavenExecutionException {
+	private String computeNewVersionFromGit(MavenSession mavenSession, String currentVersion) {
 		Optional<String> scmBranch = CIFriendlyUtils.getUserOrEnvVariable("scmBranch", mavenSession);
 		log.info("Received parameter scmBranch={}", scmBranch);
-		
+
 		File startingPom = mavenSession.getRequest().getPom();
-		String currentVersion = fetchCurrentVersionFromPom(startingPom);
 		String branchName = scmBranch.orElseGet(() -> fetchGitBranch(startingPom));
-		
+
 		boolean wasSnapshot = currentVersion.contains(SNAPSHOT);
 		String versionNoSnapshot = currentVersion.replace(SNAPSHOT, "");
 		if (versionNoSnapshot.endsWith("-" + branchName)) {
@@ -91,7 +89,6 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			return computedNewVersion;
 		}
 	}
-
 
 	/** if we are in a release, then we must adapt the behavior of the release plugin otherwise the resulting pom
 	 * will contain the branch suffix in the version ! Which we do not want. We only want to add +1 to the version,
@@ -123,7 +120,6 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 		boolean isRelease = mavenSession.getRequest().getGoals().stream().anyMatch(goal -> goal.endsWith("release:prepare") || goal.endsWith("release:perform"));
 		return isRelease;
 	}
-
 
 	private String fetchCurrentVersionFromPom(File startingPom) throws MavenExecutionException {
 
