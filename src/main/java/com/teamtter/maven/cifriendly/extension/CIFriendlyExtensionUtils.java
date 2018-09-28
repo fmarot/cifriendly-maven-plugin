@@ -19,7 +19,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CIFriendlyUtils {
+public class CIFriendlyExtensionUtils {
 
 	public static final String	EXTENSION_PREFIX				= "cifriendly";
 	public static final String	EXTENSION_GROUP_ID				= "com.teamtter.maven";

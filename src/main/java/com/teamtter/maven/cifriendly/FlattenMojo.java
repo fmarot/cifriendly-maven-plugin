@@ -23,6 +23,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.teamtter.maven.cifriendly.utils.CIFriendlyUtils;
+import com.teamtter.maven.cifriendly.utils.filesystem.DirectoryVisitor;
+import com.teamtter.maven.cifriendly.utils.filesystem.PathConsumer;
+
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;;
 

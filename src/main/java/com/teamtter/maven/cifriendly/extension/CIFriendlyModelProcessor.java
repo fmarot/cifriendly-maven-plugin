@@ -146,7 +146,7 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 		try {
 			String serializedSession = CIFriendlySession.serialize(ciFriendlySession);
 			MavenSession mavenSession = legacySupport.getSession();
-			mavenSession.getUserProperties().put(CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY, serializedSession);
+			mavenSession.getUserProperties().put(CIFriendlyExtensionUtils.SESSION_MAVEN_PROPERTIES_KEY, serializedSession);
 		} catch (Exception ex) {
 			throw new IOException("cannot serialize ciFriendlySession", ex);
 		}
@@ -173,7 +173,7 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 	private static Plugin buildAttachModifiedPomPlugin() {
 		String pluginVersion = "";
 
-		String pomPropertiesResource = "/META-INF/maven/" + CIFriendlyUtils.EXTENSION_GROUP_ID + "/" + CIFriendlyUtils.EXTENSION_ARTIFACT_ID + "/pom.properties";
+		String pomPropertiesResource = "/META-INF/maven/" + CIFriendlyExtensionUtils.EXTENSION_GROUP_ID + "/" + CIFriendlyExtensionUtils.EXTENSION_ARTIFACT_ID + "/pom.properties";
 		try (InputStream inputStream = CIFriendlyModelProcessor.class.getResourceAsStream(pomPropertiesResource)) {
 			Properties properties = new Properties();
 			properties.load(inputStream);
@@ -183,8 +183,8 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 		}
 
 		Plugin plugin = new Plugin();
-		plugin.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
-		plugin.setArtifactId(CIFriendlyUtils.EXTENSION_ARTIFACT_ID);
+		plugin.setGroupId(CIFriendlyExtensionUtils.EXTENSION_GROUP_ID);
+		plugin.setArtifactId(CIFriendlyExtensionUtils.EXTENSION_ARTIFACT_ID);
 		plugin.setVersion(pluginVersion.toString());
 
 		plugin.setExecutions(new ArrayList<>());
@@ -199,8 +199,8 @@ public class CIFriendlyModelProcessor extends DefaultModelProcessor {
 		plugin.setDependencies(new ArrayList<>());
 
 		Dependency dependency = new Dependency();
-		dependency.setGroupId(CIFriendlyUtils.EXTENSION_GROUP_ID);
-		dependency.setArtifactId(CIFriendlyUtils.EXTENSION_ARTIFACT_ID);
+		dependency.setGroupId(CIFriendlyExtensionUtils.EXTENSION_GROUP_ID);
+		dependency.setArtifactId(CIFriendlyExtensionUtils.EXTENSION_ARTIFACT_ID);
 		dependency.setVersion(pluginVersion.toString());
 		plugin.getDependencies().add(dependency);
 		return plugin;

@@ -1,4 +1,4 @@
-package com.teamtter.maven.cifriendly;
+package com.teamtter.maven.cifriendly.utils;
 
 import java.util.Arrays;
 import java.util.List;

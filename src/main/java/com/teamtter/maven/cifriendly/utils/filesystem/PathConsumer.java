@@ -1,4 +1,4 @@
-package com.teamtter.maven.cifriendly;
+package com.teamtter.maven.cifriendly.utils.filesystem;
 
 import java.io.IOException;
 import java.nio.file.Path;

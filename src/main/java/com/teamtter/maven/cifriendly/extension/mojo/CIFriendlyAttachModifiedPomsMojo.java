@@ -10,7 +10,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.teamtter.maven.cifriendly.extension.CIFriendlySession;
-import com.teamtter.maven.cifriendly.extension.CIFriendlyUtils;
+import com.teamtter.maven.cifriendly.extension.CIFriendlyExtensionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,12 +35,12 @@ public class CIFriendlyAttachModifiedPomsMojo extends AbstractMojo {
     
     @Override
     public void execute() throws MojoExecutionException {
-        if (Objects.isNull(mavenSession.getUserProperties().get(CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY))) {
+        if (Objects.isNull(mavenSession.getUserProperties().get(CIFriendlyExtensionUtils.SESSION_MAVEN_PROPERTIES_KEY))) {
             log.warn(GOAL_ATTACH_MODIFIED_POMS + "shouldn't be executed alone. The Mojo should be dynamically added to the build by the extension");
             return;
         }
 
-        String serializedSession = mavenSession.getUserProperties().getProperty((CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY));
+        String serializedSession = mavenSession.getUserProperties().getProperty((CIFriendlyExtensionUtils.SESSION_MAVEN_PROPERTIES_KEY));
         if (UPDATED_POMS_ALREADY_ATTACHED.equalsIgnoreCase(serializedSession)) {
             // We don't need to attach modified poms anymore.
         	log.info("UPDATED_POMS_ALREADY_ATTACHED => skipping attachement - projectVersion={}", projectVersion);
@@ -49,10 +49,10 @@ public class CIFriendlyAttachModifiedPomsMojo extends AbstractMojo {
 
         try {
             CIFriendlySession ciFriendlySession = CIFriendlySession.deserializeFrom(serializedSession);
-            CIFriendlyUtils.attachModifiedPomFilesToTheProject(mavenSession.getAllProjects(),
+            CIFriendlyExtensionUtils.attachModifiedPomFilesToTheProject(mavenSession.getAllProjects(),
                     ciFriendlySession.getOriginalProjects(),
                     ciFriendlySession.getComputedVersion());
-            mavenSession.getUserProperties().setProperty(CIFriendlyUtils.SESSION_MAVEN_PROPERTIES_KEY, UPDATED_POMS_ALREADY_ATTACHED);
+            mavenSession.getUserProperties().setProperty(CIFriendlyExtensionUtils.SESSION_MAVEN_PROPERTIES_KEY, UPDATED_POMS_ALREADY_ATTACHED);
         } catch (Exception ex) {
             throw new MojoExecutionException("Unable to execute goal: " + CIFriendlyAttachModifiedPomsMojo.GOAL_ATTACH_MODIFIED_POMS, ex);
         }

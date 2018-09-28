@@ -12,6 +12,9 @@ import java.util.function.Predicate;
 
 import org.apache.commons.io.FileUtils;
 
+import com.teamtter.maven.cifriendly.utils.filesystem.DirectoryVisitor;
+import com.teamtter.maven.cifriendly.utils.filesystem.PathConsumer;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

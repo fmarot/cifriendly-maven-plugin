@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
+import com.teamtter.maven.cifriendly.utils.VersionComputer;
+
 public class VersionComputerTest {
 	
 	@Test

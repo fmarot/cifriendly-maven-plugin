@@ -17,6 +17,9 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.teamtter.maven.cifriendly.utils.CIFriendlyUtils;
+import com.teamtter.maven.cifriendly.utils.VersionComputer;
+
 import de.pdark.decentxml.Document;
 import de.pdark.decentxml.Element;
 import de.pdark.decentxml.XMLParser;

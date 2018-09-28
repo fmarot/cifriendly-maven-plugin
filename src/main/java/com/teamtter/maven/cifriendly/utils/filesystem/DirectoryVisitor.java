@@ -1,4 +1,4 @@
-package com.teamtter.maven.cifriendly;
+package com.teamtter.maven.cifriendly.utils.filesystem;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -6,13 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import lombok.extern.slf4j.Slf4j;;
 
 @Slf4j
-class DirectoryVisitor extends SimpleFileVisitor<Path> {
+public class DirectoryVisitor extends SimpleFileVisitor<Path> {
 
 	private List<String>	excludedDirs;
 	private Predicate<Path>	fileMatchesPredicate;

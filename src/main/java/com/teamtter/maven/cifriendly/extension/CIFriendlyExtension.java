@@ -45,8 +45,8 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 
 	@Override
 	public void afterSessionStart(MavenSession mavenSession) throws MavenExecutionException {
-		if (CIFriendlyUtils.shouldSkip(mavenSession)) {
-			log.info("    " + CIFriendlyUtils.EXTENSION_PREFIX + "execution has been skipped by request of the user");
+		if (CIFriendlyExtensionUtils.shouldSkip(mavenSession)) {
+			log.info("    " + CIFriendlyExtensionUtils.EXTENSION_PREFIX + "execution has been skipped by request of the user");
 			sessionHolder.setSession(null);
 		} else {
 			final File multiModuleProjectDir = mavenSession.getRequest().getMultiModuleProjectDirectory();
@@ -67,12 +67,12 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 	}
 
 	private String computeNewVersion(MavenSession mavenSession, String currentVersion) throws MavenExecutionException {
-		Optional<String> newVersion = CIFriendlyUtils.getUserOrEnvVariable(CIFriendlyUtils.EXTENSION_PREFIX + ".newVersion", mavenSession);
+		Optional<String> newVersion = CIFriendlyExtensionUtils.getUserOrEnvVariable(CIFriendlyExtensionUtils.EXTENSION_PREFIX + ".newVersion", mavenSession);
 		return newVersion.orElseGet(() -> computeNewVersionFromGit(mavenSession, currentVersion));
 	}
 
 	private String computeNewVersionFromGit(MavenSession mavenSession, String currentVersion) {
-		Optional<String> scmBranch = CIFriendlyUtils.getUserOrEnvVariable("scmBranch", mavenSession);
+		Optional<String> scmBranch = CIFriendlyExtensionUtils.getUserOrEnvVariable("scmBranch", mavenSession);
 		log.info("Received parameter scmBranch={}", scmBranch);
 
 		File startingPom = mavenSession.getRequest().getPom();
@@ -95,7 +95,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 	 * not add the suffix. */
 	private void alterMavenSessionIfMavenReleaseOngoing(MavenSession mavenSession, String currentVersion) {
 		if (ongoingMavenRelease(mavenSession)) {
-			if (!CIFriendlyUtils.getUserOrEnvVariable("developmentVersion", mavenSession).isPresent()) {
+			if (!CIFriendlyExtensionUtils.getUserOrEnvVariable("developmentVersion", mavenSession).isPresent()) {
 				String nextNewVersion = computeNextDevelopmentVersion(currentVersion);
 				log.info("Ongoing Maven release detected and -DdevelopmentVersion not explicitly set"
 						+ " => will force the -DdevelopmentVersion of the release plugin to: {}", nextNewVersion);
@@ -182,7 +182,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 
 	@Override
 	public void afterProjectsRead(MavenSession mavenSession) throws MavenExecutionException {
-		if (!CIFriendlyUtils.shouldSkip(mavenSession)) {
+		if (!CIFriendlyExtensionUtils.shouldSkip(mavenSession)) {
 
 			// In *my understanding*, we simply cannot set the version on the projects (MavenProject class)
 			// because they should be read-only and mostly immutable. Besides, it is too late, they may
@@ -198,7 +198,7 @@ public class CIFriendlyExtension extends AbstractMavenLifecycleParticipant {
 			File projectBaseDir = mavenSession.getCurrentProject().getBasedir();
 			if (projectBaseDir != null) {
 
-				log.info(CIFriendlyUtils.EXTENSION_PREFIX + " has dinamically changes project(s) version(s)");
+				log.info(CIFriendlyExtensionUtils.EXTENSION_PREFIX + " has dinamically changes project(s) version(s)");
 
 				CIFriendlySession session = sessionHolder.getSession().get();
 				session.getOriginalProjects().forEach(gav -> {
